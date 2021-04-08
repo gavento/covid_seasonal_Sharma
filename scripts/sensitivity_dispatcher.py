@@ -29,6 +29,13 @@ argparser.add_argument(
     help="Do not allocate coreset with `taskset`",
 )
 argparser.add_argument(
+    "--cmd_prefix",
+    default="",
+    dest="cmd_prefix",
+    type=str,
+    help="If given, the command (incl. taskset) will be prefixed by this string (and a space) before being passed to the shell",
+)
+argparser.add_argument(
     "--model_type",
     default="default",
     dest="model_type",
@@ -177,11 +184,12 @@ if __name__ == "__main__":
             coreset = available_coresets.pop()
             # unfortunately, the best way to parallelise well is to set processor
             # affinities.
-            if args.no_taskset:
-                full_cmd = command
-            else:
-                full_cmd = f"taskset -c {coreset} {command}"
-            print(f"Running {full_cmd}")
+            full_cmd = command
+            if not args.no_taskset:
+                full_cmd = f"taskset -c {coreset} {full_cmd}"
+            if args.cmd_prefix:
+                full_cmd = f"{args.cmd_prefix} {full_cmd}"
+            print(f"Running {full_cmd!r}")
             subproc = subprocess.Popen(full_cmd, shell=True)
             processes.add((coreset, subproc))
             time.sleep(5.0)
