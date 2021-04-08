@@ -3,6 +3,30 @@ default:
   experiment_tag: default
   args: {}
 
+seasonality_r_walk_noise_scale_prior:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_r_walk_noise_scale_prior
+  args:
+    r_walk_noise_scale_prior:
+      - 0.1
+      - 0.01
+      - 0.05
+      - 0.2
+      - 0.25
+
+basic_R_prior_mean_ext:
+  experiment_file: basic_R_prior.py
+  experiment_tag: basic_R_prior_mean
+  args:
+    basic_R_scale:
+      - 0.3
+    basic_R_mean:
+      - 2.1
+      - 2.5
+      - 1.9
+      - 2.3
+      - 2.7
+
 basic_R_prior_mean:
   experiment_file: basic_R_prior.py
   experiment_tag: basic_R_prior_mean
