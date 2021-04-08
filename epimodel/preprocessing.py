@@ -188,6 +188,9 @@ class PreprocessedData(object):
             C_ind = self.unique_Cs.index(c)
             self.RC_mat[r_i, C_ind] = 1
 
+        # 1-based day of the year. "January 1" is 1
+        self.Ds_day_of_year = np.array([t.dayofyear for t in self.Ds], dtype=np.int32)
+
         self.featurized = False
 
     @property
