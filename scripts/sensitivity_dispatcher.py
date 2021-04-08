@@ -23,6 +23,12 @@ argparser.add_argument(
     help="Print run types selected and exit",
 )
 argparser.add_argument(
+    "--no_taskset",
+    default=False,
+    action="store_true",
+    help="Do not allocate coreset with `taskset`",
+)
+argparser.add_argument(
     "--model_type",
     default="default",
     dest="model_type",
@@ -171,7 +177,10 @@ if __name__ == "__main__":
             coreset = available_coresets.pop()
             # unfortunately, the best way to parallelise well is to set processor
             # affinities.
-            full_cmd = f"taskset -c {coreset} {command}"
+            if args.no_taskset:
+                full_cmd = command
+            else:
+                full_cmd = f"taskset -c {coreset} {command}"
             print(f"Running {full_cmd}")
             subproc = subprocess.Popen(full_cmd, shell=True)
             processes.add((coreset, subproc))
