@@ -20,6 +20,18 @@ argparser.add_argument(
     type=float,
     help="r_walk_noise_scale_prior",
 )
+argparser.add_argument(
+    "--basic_R_mean",
+    dest="basic_R_mean",
+    type=float,
+    help="Basic R mean",
+)
+argparser.add_argument(
+    "--basic_R_scale",
+    dest="basic_R_scale",
+    type=float,
+    help="Basic R scale",
+)
 args = argparser.parse_args()
 
 numpyro.set_host_device_count(args.num_chains)
@@ -50,8 +62,15 @@ if __name__ == "__main__":
     summary_output = os.path.join(base_outpath, f"{ts_str}_summary.json")
     full_output = os.path.join(base_outpath, f"{ts_str}_full.netcdf")
 
+    basic_R_prior = {
+        "mean": args.basic_R_mean,
+        "type": "trunc_normal",
+        "variability": args.basic_R_scale,
+    }
+
     model_build_dict = config["model_kwargs"]
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
+    model_build_dict["basic_R_prior"] = basic_R_prior
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,
@@ -74,7 +93,8 @@ if __name__ == "__main__":
     info_dict["start_dt"] = ts_str
     info_dict["exp_tag"] = args.exp_tag
     info_dict["exp_config"] = {
-        "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior
+        "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
+        "basic_R_prior": basic_R_prior,
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()
