@@ -23,16 +23,17 @@ if __name__ == "__main__":
     chains = len(f.posterior.chain)
     print(
         f"""Loaded {args.summary_json}
+        
   experiment: {s['exp_tag']} {s['exp_config']}, chains: {chains}x {len(s['warmup']['num_steps']) // chains} + {len(s['sample']['num_steps']) // chains} samples
   model:      {s['model_name']} {s['model_kwargs']}, config={s['model_config_name']!r}
 
   rhat={s['rhat']['lower']:.3f}-{s['rhat']['upper']:.3f}, divergences={s['divergences']}, accept_prob={st(s['sample']['mean_accept_prob'])}, total_runtime={s['total_runtime']:.2f} s
-  basic_R={st(f.posterior.basic_R)}, r_walk_noise={st(f.posterior.r_walk_noise)}, total effect={st(100*(1-np.exp(-np.sum(f.posterior.alpha_i, axis=-1))))}
-""")
+  basic_R={st(f.posterior.basic_R)}, r_walk_noise={st(f.posterior.r_walk_noise)}, total effect={st(100*(1-np.exp(-np.sum(f.posterior.alpha_i, axis=-1))))}""")
     if "seasonality_beta1" in f.posterior:
         print(f"  seasonality_beta1={st(f.posterior.seasonality_beta1)}")
     efs = [st(100*(1-np.exp(-d)), short=True) for d in f.posterior.alpha_i.T]
-    print("  effects(95% CI):")
+    print("\n  effects(95% CI):")
     while efs:
         print("    ", ', '.join(efs[:5]))
         efs = efs[5:]
+    print()
