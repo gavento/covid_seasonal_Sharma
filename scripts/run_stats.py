@@ -33,7 +33,8 @@ if __name__ == "__main__":
     if "seasonality_beta1" in f.posterior:
         b1 = f.posterior.seasonality_beta1
         print(
-            f"  seasonality_beta1={st(b1)}, R0(Jan 1) / R0(July 1) = {st((1 + b1) / (1-b1))}"
+            f"  seasonality_beta1={st(b1)}, R0(Jan 1) / R0(July 1) = {st((1 + b1) / (1-b1))}\n"
+            f"  equivalent NPI effect of \"summer July 1\" (vs \"Jan 1\") = {st(100*(1-(1 + b1) / (1-b1)))}"
         )
     efs = [st(100 * (1 - np.exp(-d)), short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
