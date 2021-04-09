@@ -28,13 +28,13 @@ if __name__ == "__main__":
   model:      {s['model_name']} {s['model_kwargs']}, config={s['model_config_name']!r}
 
   rhat={s['rhat']['lower']:.3f}-{s['rhat']['upper']:.3f}, divergences={s['divergences']}, accept_prob={st(s['sample']['mean_accept_prob'])}, total_runtime={s['total_runtime']:.2f} s
-  basic_R={st(f.posterior.basic_R)}, r_walk_noise={st(f.posterior.r_walk_noise)}, total effect={st(100*(1-np.exp(-np.sum(f.posterior.alpha_i, axis=-1))))}"""
+  basic_R={st(f.posterior.basic_R)}, r_walk_noise={st(f.posterior.r_walk_noise, dec=3)}, total effect={st(100*(1-np.exp(-np.sum(f.posterior.alpha_i, axis=-1))))}"""
     )
     if "seasonality_beta1" in f.posterior:
         b1 = f.posterior.seasonality_beta1
         print(
             f"  seasonality_beta1={st(b1)}, R0(Jan 1) / R0(July 1) = {st((1 + b1) / (1-b1))}\n"
-            f"  equivalent NPI effect of \"summer July 1\" (vs \"Jan 1\") = {st(100*(1-(1 + b1) / (1-b1)))}"
+            f'  equivalent NPI effect of "summer July 1" (vs "Jan 1") = {st(100*(1-(1 - b1) / (1+b1)))}'
         )
     efs = [st(100 * (1 - np.exp(-d)), short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
