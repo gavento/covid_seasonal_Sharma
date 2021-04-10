@@ -46,12 +46,19 @@ if __name__ == "__main__":
         if args.write_seasonality:
             with open(args.write_seasonality, "wt") as f:
                 f.write(",".join(str(b) for b in np.array(b1)) + "\n")
+
+    if "basic_R_prior_mean" in f.posterior:
+        brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
+        print(f"basic_R hyperprior:  mean={st(brh_m)}  scale={st(brh_s)}")
+
+
     efs = [st(100 * (1 - np.exp(-d)), dec=2, short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
     while efs:
         print("    ", ", ".join(efs[:5]))
         efs = efs[5:]
     print()
+
     if args.plot_dists:
         import seaborn as sns
         import matplotlib.pyplot as plt

@@ -77,6 +77,21 @@ def sample_basic_R(nRs, basic_r_prior=None):
                 scale=basic_r_prior["variability"] * jnp.ones(nRs),
             ),
         )
+    if basic_r_prior["type"] == "hyper_trunc_normal":
+        basic_R_prior_mean = numpyro.sample(
+            "basic_R_prior_mean", dist.TruncatedNormal(low=0.1), loc=1.35, scale=2.0 * basic_r_prior["hyper_scale"]
+        )
+        basic_R_prior_scale = numpyro.sample(
+            "basic_R_prior_scale", dist.TruncatedNormal(low=0.01), loc=0.3, scale=1.0 * basic_r_prior["hyper_scale"]
+        )
+        basic_R = numpyro.sample(
+            "basic_R",
+            dist.TruncatedNormal(
+                low=0.1,
+                loc=basic_R_prior_mean,
+                scale=basic_R_prior_scale * jnp.ones(nRs),
+            ),
+        )
     else:
         raise ValueError("Basic R prior type must be in [trunc_normal]")
 
@@ -175,6 +190,7 @@ def get_output_delay_transition(seeding_padding, data):
     :param data: Preprocessed data
     :return: transition function
     """
+
     def output_delay_transition(loop_carry, scan_slice):
         # this scan function scans over local areas, using their country specific delay, rather than over days
         # therefore the input functions are ** not ** transposed.
