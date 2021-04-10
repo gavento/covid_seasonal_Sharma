@@ -71,6 +71,18 @@ basic_R_prior_scale:
     basic_R_mean:
       - 1.35
 
+basic_R_prior_scale_ext:
+  experiment_file: basic_R_prior.py
+  experiment_tag: basic_R_prior_scale
+  args:
+    basic_R_scale:
+      - 0.6
+      - 1.0
+    basic_R_mean:
+      - 1.35
+      - 1.7
+      - 2.1
+
 england_ifr_iar:
   experiment_file: england_ifr_iar.py
   experiment_tag: eng_ifr_iar
