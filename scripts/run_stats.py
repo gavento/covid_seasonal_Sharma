@@ -26,6 +26,7 @@ if __name__ == "__main__":
     f = arviz.from_netcdf(args.summary_json.replace("_summary.json", "_full.netcdf"))
     chains = len(f.posterior.chain)
     tot_eff = 100 * (1 - np.exp(-np.sum(f.posterior.alpha_i, axis=-1)))
+    rtw_log = np.array(np.log(f.posterior.Rt_walk))
     print(
         f"""Loaded {args.summary_json}
 
@@ -34,7 +35,7 @@ if __name__ == "__main__":
 
   rhat={s['rhat']['lower']:.3f}-{s['rhat']['upper']:.3f}, divergences={s['divergences']}, accept_prob={st(s['sample']['mean_accept_prob'])}, total_runtime={s['total_runtime']:.2f} s
   basic_R={st(f.posterior.basic_R)}, total effect={st(tot_eff)}
-  r_walk_noise={st(f.posterior.r_walk_noise, dec=3)} mean(r_w_n^2)={np.mean(np.array(f.posterior.r_walk_noise)**2):.6f}"""
+  log(Rt_walk)={st(rtw_log)}, Rt_walk^2 in logspace: {st(rtw_log**2)}"""
     )
     if "seasonality_beta1" in f.posterior:
         b1 = f.posterior.seasonality_beta1
@@ -59,26 +60,24 @@ if __name__ == "__main__":
         fig.suptitle(f"Dists for {s['exp_tag']}\n{s['exp_config']}")
 
         axes[0, 0].set_title(
-            f"r_walk_noise: {st(f.posterior.r_walk_noise, ci=False)}\nmean(x^2)={np.mean(np.array(f.posterior.r_walk_noise)**2):.4f}"
+            f"Rt_walk in logspace: {st(rtw_log, ci=False)}\nRt_walk^2 in logspace: {st(rtw_log**2, ci=False)}"
         )
-        axes[0, 0].set_xlim([-0.6, 0.6])
-        sns.histplot(
-            np.array(f.posterior.r_walk_noise).flatten(), ax=axes[0, 0], bins=50
-        )
+        axes[0, 0].set_xlim([-1.0, 1.0])
+        sns.histplot(rtw_log.flatten(), ax=axes[0, 0], bins=80, binrange=[-1.0, 1.0])
 
         axes[1, 0].set_title(f"basic_R: {st(f.posterior.basic_R, ci=False)}")
         axes[1, 0].set_xlim([0.5, 3.0])
-        sns.histplot(np.array(f.posterior.basic_R).flatten(), ax=axes[1, 0], bins=50)
+        sns.histplot(np.array(f.posterior.basic_R).flatten(), ax=axes[1, 0], bins=80, binrange=[0.5, 3.0])
 
         axes[0, 1].set_title(f"total NPI effect: {st(tot_eff, short=True)}")
-        axes[0, 1].set_xlim([60, 80])
-        sns.histplot(np.array(tot_eff).flatten(), ax=axes[0, 1], bins=50)
+        axes[0, 1].set_xlim([50, 90])
+        sns.histplot(np.array(tot_eff).flatten(), ax=axes[0, 1], bins=80, binrange=[50, 90])
 
-        axes[1, 1].set_xlim([-0.25, 0.75])
+        axes[1, 1].set_xlim([-0.1, 0.6])
         axes[1, 1].set_title(f"seasonality beta_1: NA")
         if "seasonality_beta1" in f.posterior:
             axes[1, 1].set_title(f"seasonality beta_1: {st(b1, short=True)}")
-            sns.histplot(np.array(b1).flatten(), ax=axes[1, 1], bins=50)
+            sns.histplot(np.array(b1).flatten(), ax=axes[1, 1], bins=80, binrange=[-0.1, 0.6])
 
         plt.tight_layout()
         plt.savefig(args.summary_json.replace("_summary.json", "_dists.pdf"))
