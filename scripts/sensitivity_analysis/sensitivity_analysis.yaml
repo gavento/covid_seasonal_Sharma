@@ -83,6 +83,15 @@ basic_R_prior_ext:
       - 1.7
       - 2.1
 
+basic_R_hyperprior:
+  experiment_file: basic_R_hyperprior.py
+  experiment_tag: basic_R_hyperprior
+  args:
+    basic_R_hyper_scale:
+      - 1.0
+      - 0.5
+      - 2.0
+
 england_ifr_iar:
   experiment_file: england_ifr_iar.py
   experiment_tag: eng_ifr_iar
