@@ -21,6 +21,15 @@ seasonality_basic_R_prior:
     r_walk_noise_scale_prior:
       - 0.15  # default
 
+seasonality_basic_R_hyperprior:
+  experiment_file: seasonality_basic_R_hyperprior.py
+  experiment_tag: seasonality_basic_R_hyperprior
+  args:
+    basic_R_hyper_scale:
+      - 1.0
+      - 0.5
+      - 2.0
+
 seasonality_r_walk_noise_scale_prior:
   experiment_file: seasonality.py
   experiment_tag: seasonality_r_walk_noise_scale_prior
