@@ -79,7 +79,6 @@ if __name__ == "__main__":
     info_dict["start_dt"] = ts_str
     info_dict["exp_tag"] = args.exp_tag
     info_dict["exp_config"] = {
-        "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
         "basic_R_prior": basic_R_prior,
     }
     info_dict["cm_names"] = data.CMs
