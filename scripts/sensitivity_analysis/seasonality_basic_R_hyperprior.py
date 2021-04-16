@@ -18,7 +18,15 @@ argparser.add_argument(
     "--basic_R_hyper_scale",
     dest="basic_R_hyper_scale",
     type=float,
+    default=1.0,
     help="Basic R hyperprios scaling (both for mean (x2) and scale (x1))",
+)
+argparser.add_argument(
+    "--seasonality_max_R_day",
+    dest="seasonality_max_R_day",
+    type=int,
+    default=1,
+    help="Day of the seasonally-highest R (1..365)",
 )
 args = argparser.parse_args()
 
@@ -57,6 +65,7 @@ if __name__ == "__main__":
 
     model_build_dict = config["model_kwargs"]
     model_build_dict["basic_R_prior"] = basic_R_prior
+    model_build_dict["seasonality_max_R_day"] = args.seasonality_max_R_day
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,
@@ -80,6 +89,7 @@ if __name__ == "__main__":
     info_dict["exp_tag"] = args.exp_tag
     info_dict["exp_config"] = {
         "basic_R_prior": basic_R_prior,
+        "seasonality_max_R_day": args.seasonality_max_R_day,
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()

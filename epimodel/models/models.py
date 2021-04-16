@@ -938,6 +938,7 @@ def seasonality_model(
     infection_noise_scale=5.0,
     output_noise_scale_prior=5.0,
     seasonality_prior="uniform",
+    seasonality_max_R_day=1,
     **kwargs,
 ):
     """
@@ -953,6 +954,8 @@ def seasonality_model(
     :param seeding_scale: scale of seeded infection prior
     :param infection_noise_scale: scale of infection noise
     :param output_noise_scale_prior: output noise scale prior
+    :param seasonality_prior: type of prior to use for seasonality scale (just "uniform")
+    :param seasonality_max_R_day: day of year of seasonally-highest R (int 1..365)
     :param kwargs: additional kwargs (not used, but maintain function signature)
     """
     for k in kwargs.keys():
@@ -985,7 +988,7 @@ def seasonality_model(
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
         1.0
-        + seasonality_beta1 * jnp.cos((data.Ds_day_of_year - 1) / 365.0 * 2.0 * jnp.pi),
+        + seasonality_beta1 * jnp.cos((data.Ds_day_of_year - seasonality_max_R_day) / 365.0 * 2.0 * jnp.pi),
     )
 
     # rescaling variables by 10 for better NUTS adaptation

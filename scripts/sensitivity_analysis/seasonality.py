@@ -19,18 +19,28 @@ argparser.add_argument(
     dest="r_walk_noise_scale_prior",
     type=float,
     help="r_walk_noise_scale_prior",
+    default=0.15,
 )
 argparser.add_argument(
     "--basic_R_mean",
     dest="basic_R_mean",
     type=float,
+    default=1.35,
     help="Basic R mean",
 )
 argparser.add_argument(
     "--basic_R_scale",
     dest="basic_R_scale",
     type=float,
+    default=0.3,
     help="Basic R scale",
+)
+argparser.add_argument(
+    "--seasonality_max_R_day",
+    dest="seasonality_max_R_day",
+    type=int,
+    default=1,
+    help="Day of the seasonally-highest R (1..365)",
 )
 args = argparser.parse_args()
 
@@ -71,6 +81,7 @@ if __name__ == "__main__":
     model_build_dict = config["model_kwargs"]
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
     model_build_dict["basic_R_prior"] = basic_R_prior
+    model_build_dict["seasonality_max_R_day"] = args.seasonality_max_R_day
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,
@@ -95,6 +106,7 @@ if __name__ == "__main__":
     info_dict["exp_config"] = {
         "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
         "basic_R_prior": basic_R_prior,
+        "seasonality_max_R_day": args.seasonality_max_R_day,
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()
