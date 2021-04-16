@@ -969,6 +969,8 @@ def seasonality_model(
     cm_reduction = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)), axis=1)
 
     # sample basic R
+    # NB: SEASONALITY interpretation: this is the R0 on the first day already including seasonality
+    # Therefore it is comparable to basic_R without seasonality
     basic_R = sample_basic_R(data.nRs, basic_R_prior)
 
     # number of 'noise points'
@@ -1009,20 +1011,15 @@ def seasonality_model(
         full_log_Rt_noise, jax.ops.index[:, 2 * r_walk_period :], expanded_r_walk_noise
     )
 
+    # NB: basic_R is R0(t=0) INCLUDING seasonality effect (for comparability with non-seasonal model),
+    # so we need to divide by the initial seasonality first
     Rt = numpyro.deterministic(
         "Rt",
         jnp.exp(
             jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise - cm_reduction
         )
-        * seasonality_multiplier.reshape((1, data.nDs)),
+        * seasonality_multiplier.reshape((1, data.nDs)) / seasonality_multiplier[0],
     )
-
-#    Rt = numpyro.deterministic(
-#        "Rt",
-#        jnp.exp(full_log_Rt_noise - cm_reduction)
-#        * basic_R.reshape((data.nRs, 1))
-#        * seasonality_multiplier.reshape((1, data.nDs)),
-#    )
 
     # collect variables in the numpyro trace
     numpyro.deterministic("Rt_walk", jnp.exp(full_log_Rt_noise))
