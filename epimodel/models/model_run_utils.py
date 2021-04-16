@@ -214,7 +214,7 @@ def run_model(
             inf_data = az.from_numpyro(mcmc)
 
             if output_fname is None:
-                output_fname = f'{model_func.__name__}-{datetime.now(tz=None).strftime("%d-%m;%H-%M-%S")}.netcdf'
+                output_fname = f'{model_func.__name__}-{datetime.now(tz=None).strftime("%y-%m-%d_%H-%M-%S")}.netcdf'
 
             az.to_netcdf(inf_data, output_fname)
 
