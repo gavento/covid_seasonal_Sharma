@@ -11,38 +11,42 @@ seasonality_basic_R_prior:
       - 1.35  # default
       - 1.1
       - 1.7
-      - 2.1
       - 1.5
     basic_R_scale:
       - 0.3  # default
-      - 1.0
-      - 0.1
-      - 0.5
-    r_walk_noise_scale_prior:
-      - 0.15  # default
+      - 0.6
+      - 0.15
 
-seasonality_basic_R_hyperprior:
+seasonality_maxRday:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_maxRday
+  args:
+    seasonality_max_R_day:
+      - 1
+      - 16
+      - 31
+      - 336
+      - 351
+
+seasonality_basic_R_hyperprior_scale:
   experiment_file: seasonality_basic_R_hyperprior.py
-  experiment_tag: seasonality_basic_R_hyperprior
+  experiment_tag: seasonality_basic_R_hyperprior_scale
   args:
     basic_R_hyper_scale:
       - 1.0
       - 0.5
       - 2.0
 
-seasonality_r_walk_noise_scale_prior:
-  experiment_file: seasonality.py
-  experiment_tag: seasonality_r_walk_noise_scale_prior
+seasonality_basic_R_hyperprior_maxRday:
+  experiment_file: seasonality_basic_R_hyperprior.py
+  experiment_tag: seasonality_basic_R_hyperprior_maxRday
   args:
-    basic_R_mean:
-      - 1.35  # default
-    basic_R_scale:
-      - 0.3  # default
-    r_walk_noise_scale_prior:
-      - 0.02
-      - 0.1
-      - 0.05
-      - 0.2
+    seasonality_max_R_day:
+      - 1
+      - 16
+      - 31
+      - 336
+      - 351
 
 basic_R_prior_mean_ext:
   experiment_file: basic_R_prior.py
