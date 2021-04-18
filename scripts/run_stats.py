@@ -51,7 +51,7 @@ if __name__ == "__main__":
             ) as cf:
                 cfw = csv.writer(cf)
                 cfw.writerow(
-                    [f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}\n"]
+                    [f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}"]
                 )
                 cfw.writerows([[str(b)] for b in np.array(b1).flatten()])
 
