@@ -46,7 +46,7 @@ if __name__ == "__main__":
         if args.write_seasonality:
             with open(args.summary_json.replace("_summary.json", "_beta1.csv"), "wt") as cf:
                 cf.write(f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}\n")
-                cf.write("\n".join(str(b) for b in np.array(b1)) + "\n")
+                cf.write("\n".join(str(b) for b in np.array(b1).flatten()) + "\n")
 
     if "basic_R_prior_mean" in f.posterior:
         brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
