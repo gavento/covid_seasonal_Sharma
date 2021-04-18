@@ -1,7 +1,9 @@
-import numpy as np
-import arviz
-import json
 import argparse
+import csv
+import json
+
+import arviz
+import numpy as np
 
 
 def st(d, ci=0.95, dec=3, short=False):
@@ -44,14 +46,18 @@ if __name__ == "__main__":
             f'  equivalent NPI effect of "summer July 1" (vs "Jan 1") = {st(100*(1 - (1 - b1) / (1 + b1)))}'
         )
         if args.write_seasonality:
-            with open(args.summary_json.replace("_summary.json", "_beta1.csv"), "wt") as cf:
-                cf.write(f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}\n")
-                cf.write("\n".join(str(b) for b in np.array(b1).flatten()) + "\n")
+            with open(
+                args.summary_json.replace("_summary.json", "_beta1.csv"), "wt"
+            ) as cf:
+                cfw = csv.writer(cf)
+                cfw.writerow(
+                    [f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}\n"]
+                )
+                cfw.writerows([[str(b)] for b in np.array(b1).flatten()])
 
     if "basic_R_prior_mean" in f.posterior:
         brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
         print(f"basic_R hyperprior:  mean={st(brh_m)}  scale={st(brh_s)}")
-
 
     efs = [st(100 * (1 - np.exp(-d)), dec=2, short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
@@ -61,8 +67,8 @@ if __name__ == "__main__":
     print()
 
     if args.plot_dists:
-        import seaborn as sns
         import matplotlib.pyplot as plt
+        import seaborn as sns
 
         fig, axes = plt.subplots(2, 2, figsize=(12, 8))
         fig.suptitle(f"Dists for {s['exp_tag']}\n{s['exp_config']}")
@@ -75,17 +81,26 @@ if __name__ == "__main__":
 
         axes[1, 0].set_title(f"basic_R: {st(f.posterior.basic_R, ci=False)}")
         axes[1, 0].set_xlim([0.5, 3.0])
-        sns.histplot(np.array(f.posterior.basic_R).flatten(), ax=axes[1, 0], bins=80, binrange=[0.5, 3.0])
+        sns.histplot(
+            np.array(f.posterior.basic_R).flatten(),
+            ax=axes[1, 0],
+            bins=80,
+            binrange=[0.5, 3.0],
+        )
 
         axes[0, 1].set_title(f"total NPI effect: {st(tot_eff, short=True)}")
         axes[0, 1].set_xlim([50, 90])
-        sns.histplot(np.array(tot_eff).flatten(), ax=axes[0, 1], bins=80, binrange=[50, 90])
+        sns.histplot(
+            np.array(tot_eff).flatten(), ax=axes[0, 1], bins=80, binrange=[50, 90]
+        )
 
         axes[1, 1].set_xlim([-0.1, 0.6])
         axes[1, 1].set_title(f"seasonality beta_1: NA")
         if "seasonality_beta1" in f.posterior:
             axes[1, 1].set_title(f"seasonality beta_1: {st(b1, short=True)}")
-            sns.histplot(np.array(b1).flatten(), ax=axes[1, 1], bins=80, binrange=[-0.1, 0.6])
+            sns.histplot(
+                np.array(b1).flatten(), ax=axes[1, 1], bins=80, binrange=[-0.1, 0.6]
+            )
 
         plt.tight_layout()
         plt.savefig(args.summary_json.replace("_summary.json", "_dists.pdf"))
