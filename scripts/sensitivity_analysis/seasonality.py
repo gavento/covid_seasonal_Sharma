@@ -97,7 +97,7 @@ if __name__ == "__main__":
     log_output = f"{args.output_base}.log"
     summary_output = f"{args.output_base}_summary.json"
     full_output = f"{args.output_base}_full.netcdf"
-    logprocess = subprocess.Popen(["/bin/tee", log_output], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    logprocess = subprocess.Popen(["/usr/bin/tee", log_output], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     os.close(sys.stdout.fileno())
     os.dup2(logprocess.stdin.fileno(), sys.stdout.fileno())
     os.close(sys.stderr.fileno())
