@@ -1,19 +1,28 @@
-import sys, os
+import os
+import sys
 
 sys.path.append(os.getcwd())  # add current working directory to the path
 
-from epimodel import EpidemiologicalParameters, run_model, preprocess_data
-from epimodel.models.models import seasonality_model
-from epimodel.script_utils import *
-
 import argparse
 import json
-import numpyro
+import subprocess
 from datetime import datetime
+
+import numpyro
+from epimodel import EpidemiologicalParameters, preprocess_data, run_model
+from epimodel.models.models import seasonality_model
+from epimodel.script_utils import *
 
 argparser = argparse.ArgumentParser()
 
 add_argparse_arguments(argparser)
+argparser.add_argument(
+    "--output_base",
+    dest="output_base",
+    type=str,
+    default="",
+)
+
 argparser.add_argument(
     "--r_walk_noise_scale_prior",
     dest="r_walk_noise_scale_prior",
@@ -44,8 +53,24 @@ argparser.add_argument(
 )
 args = argparser.parse_args()
 
-numpyro.set_host_device_count(args.num_chains)
 if __name__ == "__main__":
+    numpyro.set_host_device_count(args.num_chains)
+
+    if not args.output_base:
+        base_outpath = generate_base_output_dir(
+            args.model_type, args.model_config, args.exp_tag
+        )
+        ts_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+        args.output_base = os.path.join(base_outpath, f"{ts_str}-{os.getpid()}")
+    log_output = f"{args.output_base}.log"
+    summary_output = f"{args.output_base}_summary.json"
+    full_output = f"{args.output_base}_full.netcdf"
+    logprocess = subprocess.Popen(["/bin/tee", log_output], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    os.close(sys.stdout.fileno())
+    os.dup2(logprocess.stdin.fileno(), sys.stdout.fileno())
+    os.close(sys.stderr.fileno())
+    os.dup2(logprocess.stdin.fileno(), sys.stderr.fileno())
+
     print(f"Running Sensitivity Analysis {__file__} with config:")
     config = load_model_config(args.model_config)
     pprint_mb_dict(config)
@@ -64,13 +89,6 @@ if __name__ == "__main__":
     model_func = seasonality_model
     ta = get_target_accept_from_model_str(args.model_type)
     td = get_tree_depth_from_model_str(args.model_type)
-
-    base_outpath = generate_base_output_dir(
-        args.model_type, args.model_config, args.exp_tag
-    )
-    ts_str = datetime.now().strftime("%Y-%m-%d;%H:%M:%S")
-    summary_output = os.path.join(base_outpath, f"{ts_str}_summary.json")
-    full_output = os.path.join(base_outpath, f"{ts_str}_full.netcdf")
 
     basic_R_prior = {
         "mean": args.basic_R_mean,
