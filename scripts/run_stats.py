@@ -17,7 +17,7 @@ def st(d, ci=0.95, dec=3, short=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("summary_json")
-    parser.add_argument("-w", "--write_seasonality", type=str)
+    parser.add_argument("-w", "--write_seasonality", action="store_true")
     parser.add_argument("-p", "--plot_dists", action="store_true")
     args = parser.parse_args()
 
@@ -44,8 +44,9 @@ if __name__ == "__main__":
             f'  equivalent NPI effect of "summer July 1" (vs "Jan 1") = {st(100*(1 - (1 - b1) / (1 + b1)))}'
         )
         if args.write_seasonality:
-            with open(args.write_seasonality, "wt") as f:
-                f.write(",".join(str(b) for b in np.array(b1)) + "\n")
+            with open(args.summary_json.replace("_summary.json", "_beta1.csv"), "wt") as f:
+                f.write(f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}\n")
+                f.write("\n".join(str(b) for b in np.array(b1)) + "\n")
 
     if "basic_R_prior_mean" in f.posterior:
         brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
