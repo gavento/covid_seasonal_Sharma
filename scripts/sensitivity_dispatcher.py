@@ -45,7 +45,7 @@ argparser.add_argument(
 
 argparser.add_argument(
     "--model_config",
-    default="default",
+    default=["default"],
     dest="model_config",
     type=str,
     nargs="+",
