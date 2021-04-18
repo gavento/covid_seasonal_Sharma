@@ -17,6 +17,14 @@ argparser = argparse.ArgumentParser()
 
 add_argparse_arguments(argparser)
 argparser.add_argument(
+    "--output_base",
+    dest="output_base",
+    type=str,
+    help="Override destination path prefix (adding '.log', '_summary.json', '_full.netcdf')",
+    default="",
+)
+
+argparser.add_argument(
     "--r_walk_noise_scale_prior",
     dest="r_walk_noise_scale_prior",
     type=float,
