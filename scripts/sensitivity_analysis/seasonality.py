@@ -17,40 +17,64 @@ argparser = argparse.ArgumentParser()
 
 add_argparse_arguments(argparser)
 argparser.add_argument(
-    "--output_base",
-    dest="output_base",
-    type=str,
-    default="",
-)
-
-argparser.add_argument(
     "--r_walk_noise_scale_prior",
     dest="r_walk_noise_scale_prior",
     type=float,
-    help="r_walk_noise_scale_prior",
+    help="r_walk_noise_scale_prior (default 0.15)",
     default=0.15,
+)
+
+argparser.add_argument(
+    "--basic_R_prior",
+    dest="basic_R_prior",
+    type=str,
+    default="normal",
+    help="Basic R prior type ('normal', 'hyper')",
 )
 argparser.add_argument(
     "--basic_R_mean",
     dest="basic_R_mean",
     type=float,
     default=1.35,
-    help="Basic R mean",
+    help="Basic R mean (default 1.35)",
 )
 argparser.add_argument(
     "--basic_R_scale",
     dest="basic_R_scale",
     type=float,
     default=0.3,
-    help="Basic R scale",
+    help="Basic R scale (default 0.3)",
 )
 argparser.add_argument(
-    "--seasonality_max_R_day",
-    dest="seasonality_max_R_day",
-    type=int,
-    default=1,
-    help="Day of the seasonally-highest R (1..365)",
+    "--basic_R_hyper_scale",
+    dest="basic_R_hyper_scale",
+    type=float,
+    default=1.0,
+    help="Basic R hyperprios scaling (both for mean (x2.0) and scale (x1.0))",
 )
+
+argparser.add_argument(
+    "--max_R_day_prior",
+    dest="max_R_day_prior",
+    type=str,
+    default="fixed",
+    help="Prior for the day of the seasonally-highest R ('fixed', 'normal')",
+)
+argparser.add_argument(
+    "--max_R_day",
+    dest="max_R_day",
+    type=float,
+    default=1.0,
+    help="Day of the seasonally-highest R (1..365, default 1 = Jan 1)",
+)
+argparser.add_argument(
+    "--max_R_day_scale",
+    dest="max_R_day_scale",
+    type=float,
+    default=45.0,
+    help="Scale for for the day of the seasonally-highest R (mean is 1 = Jan 1)",
+)
+
 args = argparser.parse_args()
 
 if __name__ == "__main__":
@@ -90,16 +114,38 @@ if __name__ == "__main__":
     ta = get_target_accept_from_model_str(args.model_type)
     td = get_tree_depth_from_model_str(args.model_type)
 
-    basic_R_prior = {
-        "mean": args.basic_R_mean,
-        "type": "trunc_normal",
-        "variability": args.basic_R_scale,
-    }
+    if args.basic_R_prior == "normal":
+        basic_R_prior = {
+            "type": "trunc_normal",
+            "mean": args.basic_R_mean,
+            "variability": args.basic_R_scale,
+        }
+    elif args.basic_R_prior == "hyper":
+        basic_R_prior = {
+            "type": "hyper_trunc_normal",
+            "hyper_scale": args.basic_R_hyper_scale,
+        }
+    else:
+        raise Exception("Invalid basic_R_prior")
+
+    if args.max_R_day_prior == "fixed":
+        max_R_day_prior = {
+            "type": "fixed",
+            "value": float(args.max_R_day),
+        }
+    elif args.max_R_day_prior == "normal":
+        max_R_day_prior = {
+            "type": "normal",
+            "mean": 0.0,
+            "scale": float(args.max_R_day_scale),
+        }
+    else:
+        raise Exception("Invalid seasonality_max_R_day_prior")
 
     model_build_dict = config["model_kwargs"]
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
     model_build_dict["basic_R_prior"] = basic_R_prior
-    model_build_dict["seasonality_max_R_day"] = args.seasonality_max_R_day
+    model_build_dict["max_R_day_prior"] = max_R_day_prior
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,
@@ -124,7 +170,7 @@ if __name__ == "__main__":
     info_dict["exp_config"] = {
         "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
         "basic_R_prior": basic_R_prior,
-        "seasonality_max_R_day": args.seasonality_max_R_day,
+        "max_R_day_prior": max_R_day_prior,
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()

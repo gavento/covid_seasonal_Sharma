@@ -938,7 +938,7 @@ def seasonality_model(
     infection_noise_scale=5.0,
     output_noise_scale_prior=5.0,
     seasonality_prior="uniform",
-    seasonality_max_R_day=1,
+    max_R_day_prior=None,
     **kwargs,
 ):
     """
@@ -955,7 +955,7 @@ def seasonality_model(
     :param infection_noise_scale: scale of infection noise
     :param output_noise_scale_prior: output noise scale prior
     :param seasonality_prior: type of prior to use for seasonality scale (just "uniform")
-    :param seasonality_max_R_day: day of year of seasonally-highest R (int 1..365)
+    :param max_R_day_prior: prior dict for day of maximum R from seasonality
     :param kwargs: additional kwargs (not used, but maintain function signature)
     """
     for k in kwargs.keys():
@@ -981,16 +981,31 @@ def seasonality_model(
         "r_walk_noise_scale", dist.HalfNormal(scale=r_walk_noise_scale_prior)
     )
 
+    if max_R_day_prior["type"] == "normal":
+        seasonality_max_R_day = numpyro.sample(
+            "seasonality_max_R_day",
+            dist.Normal(max_R_day_prior["mean"], max_R_day_prior["scale"]),
+        )
+    elif max_R_day_prior["type"] == "fixed":
+        seasonality_max_R_day = numpyro.deterministic(
+            "seasonality_max_R_day",
+            jnp.array(max_R_day_prior["value"], dtype=jnp.float32),
+        )
+    else:
+        raise Exception(f"Invalid max_R_day_prior")
+
     if seasonality_prior == "uniform":
         seasonality_beta1 = numpyro.sample(
             "seasonality_beta1", dist.Uniform(-0.95, 0.95)
         )
     else:
         raise Exception("Invalid seasonality_prior")
+
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
         1.0
-        + seasonality_beta1 * jnp.cos((data.Ds_day_of_year - seasonality_max_R_day) / 365.0 * 2.0 * jnp.pi),
+        + seasonality_beta1
+        * jnp.cos((data.Ds_day_of_year - seasonality_max_R_day) / 365.0 * 2.0 * jnp.pi),
     )
 
     # rescaling variables by 10 for better NUTS adaptation
@@ -1018,7 +1033,8 @@ def seasonality_model(
         jnp.exp(
             jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise - cm_reduction
         )
-        * seasonality_multiplier.reshape((1, data.nDs)) / seasonality_multiplier[0],
+        * seasonality_multiplier.reshape((1, data.nDs))
+        / seasonality_multiplier[0],
     )
 
     # collect variables in the numpyro trace
