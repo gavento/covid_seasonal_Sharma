@@ -42,8 +42,13 @@ if __name__ == "__main__":
   log(Rt_walk)={st(rtw_log)}, Rt_walk^2 in logspace: {st(rtw_log**2)}"""
     )
 
-    csv_cols.append(pd.Series(f.posterior.basic_R, name="basic_R"))
-    csv_cols.append(pd.Series(tot_eff, name="total_effect"))
+    csv_cols.append(
+        pd.Series(f.posterior.basic_R.mean(axis=-1).flatten(), name="basic_R")
+    )
+    csv_cols.append(
+        pd.Series(f.posterior.basic_R.std(axis=-1).flatten(), name="basic_R_sd")
+    )
+    csv_cols.append(pd.Series(tot_eff.flatten(), name="total_effect"))
 
     if "seasonality_beta1" in f.posterior:
         b1 = f.posterior.seasonality_beta1
@@ -51,19 +56,25 @@ if __name__ == "__main__":
             f"  seasonality_beta1={st(b1)}, R0(Jan 1) / R0(July 1) = {st((1 + b1) / (1-b1))}\n"
             f'  equivalent NPI effect of "summer July 1" (vs "Jan 1") = {st(100*(1 - (1 - b1) / (1 + b1)))}'
         )
-        csv_cols.append(pd.Series(b1, name="beta_1"))
-        csv_cols.append(pd.Series(f.posterior.basic_R / f.posterior.seasonality_multiplier[:, 0], name="no_seasonality_basic_R"))
+        csv_cols.append(pd.Series(b1.flatten(), name="beta_1"))
+        csv_cols.append(
+            pd.Series(
+                f.posterior.basic_R.mean(axis=-1).flatten()
+                / f.posterior.seasonality_multiplier[:, 0],
+                name="no_seasonality_basic_R",
+            )
+        )
 
     if "basic_R_prior_mean" in f.posterior:
         brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
         print(f"basic_R hyperprior:  mean={st(brh_m)}  scale={st(brh_s)}")
-        csv_cols.append(pd.Series(brh_m, name="basic_R_prior_mean"))
-        csv_cols.append(pd.Series(brh_s, name="basic_R_prior_scale"))
+        csv_cols.append(pd.Series(brh_m.flatten(), name="basic_R_prior_mean"))
+        csv_cols.append(pd.Series(brh_s.flatten(), name="basic_R_prior_scale"))
 
     if "seasonality_max_R_day" in f.posterior:
         mRd = f.posterior.seasonality_max_R_day
         print(f"seasonality_max_R_day: {st(mRd)}")
-        csv_cols.append(pd.Series(mRd, name="seasonality_max_R_day"))
+        csv_cols.append(pd.Series(mRd.flatten(), name="seasonality_max_R_day"))
 
     efs = [st(100 * (1 - np.exp(-d)), dec=2, short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
@@ -74,8 +85,11 @@ if __name__ == "__main__":
 
     if args.write_csv:
         for i, d in enumerate(f.posterior.alpha_i.T):
-            csv_cols.append(pd.Series(d, name=f"alpha/{s['cm_names'][i]}"))
-        pd.DataFrame(csv_cols).to_csv(args.summary_json.replace("_summary.json", "_stats.csv.xz"), index=False)
+            csv_cols.append(pd.Series(d.flatten(), name=f"alpha/{s['cm_names'][i]}"))
+        df = pd.DataFrame(csv_cols)
+        df.to_csv(
+            args.summary_json.replace("_summary.json", "_stats.csv.xz"), index=False
+        )
 
     if args.plot_dists:
         import matplotlib.pyplot as plt
