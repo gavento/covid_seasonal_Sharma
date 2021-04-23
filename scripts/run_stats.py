@@ -4,6 +4,7 @@ import json
 
 import arviz
 import numpy as np
+import pandas as pd
 
 
 def st(d, ci=0.95, dec=3, short=False):
@@ -19,7 +20,7 @@ def st(d, ci=0.95, dec=3, short=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("summary_json")
-    parser.add_argument("-w", "--write_seasonality", action="store_true")
+    parser.add_argument("-w", "--write_csv", action="store_true")
     parser.add_argument("-p", "--plot_dists", action="store_true")
     args = parser.parse_args()
 
@@ -29,6 +30,7 @@ if __name__ == "__main__":
     chains = len(f.posterior.chain)
     tot_eff = 100 * (1 - np.exp(-np.sum(f.posterior.alpha_i, axis=-1)))
     rtw_log = np.array(np.log(f.posterior.Rt_walk))
+    csv_cols = []
     print(
         f"""Loaded {args.summary_json}
 
@@ -39,25 +41,29 @@ if __name__ == "__main__":
   basic_R={st(f.posterior.basic_R)}, total effect={st(tot_eff)}
   log(Rt_walk)={st(rtw_log)}, Rt_walk^2 in logspace: {st(rtw_log**2)}"""
     )
+
+    csv_cols.append(pd.Series(f.posterior.basic_R, name="basic_R"))
+    csv_cols.append(pd.Series(tot_eff, name="total_effect"))
+
     if "seasonality_beta1" in f.posterior:
         b1 = f.posterior.seasonality_beta1
         print(
             f"  seasonality_beta1={st(b1)}, R0(Jan 1) / R0(July 1) = {st((1 + b1) / (1-b1))}\n"
             f'  equivalent NPI effect of "summer July 1" (vs "Jan 1") = {st(100*(1 - (1 - b1) / (1 + b1)))}'
         )
-        if args.write_seasonality:
-            with open(
-                args.summary_json.replace("_summary.json", "_beta1.csv"), "wt"
-            ) as cf:
-                cfw = csv.writer(cf)
-                cfw.writerow(
-                    [f"Sharma {s['exp_tag']} {s['model_config_name']} {s['exp_config']}"]
-                )
-                cfw.writerows([[str(b)] for b in np.array(b1).flatten()])
+        csv_cols.append(pd.Series(b1, name="beta_1"))
+        csv_cols.append(pd.Series(f.posterior.basic_R / f.posterior.seasonality_multiplier[:, 0], name="no_seasonality_basic_R"))
 
     if "basic_R_prior_mean" in f.posterior:
         brh_m, brh_s = f.posterior.basic_R_prior_mean, f.posterior.basic_R_prior_scale
         print(f"basic_R hyperprior:  mean={st(brh_m)}  scale={st(brh_s)}")
+        csv_cols.append(pd.Series(brh_m, name="basic_R_prior_mean"))
+        csv_cols.append(pd.Series(brh_s, name="basic_R_prior_scale"))
+
+    if "seasonality_max_R_day" in f.posterior:
+        mRd = f.posterior.seasonality_max_R_day
+        print(f"seasonality_max_R_day: {st(mRd)}")
+        csv_cols.append(pd.Series(mRd, name="seasonality_max_R_day"))
 
     efs = [st(100 * (1 - np.exp(-d)), dec=2, short=True) for d in f.posterior.alpha_i.T]
     print("\n  effects(95% CI):")
@@ -65,6 +71,11 @@ if __name__ == "__main__":
         print("    ", ", ".join(efs[:5]))
         efs = efs[5:]
     print()
+
+    if args.write_csv:
+        for i, d in enumerate(f.posterior.alpha_i.T):
+            csv_cols.append(pd.Series(d, name=f"alpha/{s['cm_names'][i]}"))
+        pd.DataFrame(csv_cols).to_csv(args.summary_json.replace("_summary.json", "_stats.csv.xz"), index=False)
 
     if args.plot_dists:
         import matplotlib.pyplot as plt
