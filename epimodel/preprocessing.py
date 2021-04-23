@@ -228,6 +228,7 @@ class PreprocessedData(object):
         gatherings_aggregation="drop_outdoor",
         gatherings_aggregation_type="weaker",
         keep_merged_value=False,
+        all_binary=False,
     ):
         """
         Featurise i.e., convert raw NPIs to binary features
@@ -435,6 +436,11 @@ class PreprocessedData(object):
 
         new_active_cms = np.zeros((nRs, 0, nDs))
 
+        # Workaround to easily run already featurized (all-binary) datasets
+        if all_binary:
+            binary_npis = self.CMs
+            gathering_household_npi_pairs = []
+
         cm_names = []
         for bin_npi in binary_npis:
             old_index = self.CMs.index(bin_npi)
@@ -498,13 +504,14 @@ class PreprocessedData(object):
                 )
                 cm_names.append(f"Extra {hshold_npi}")
 
-        mask_ind = self.CMs.index(mask_npi)
-        for t in mask_thresholds:
-            mask_feature = self.active_cms[:, mask_ind, :] > t - 1
-            new_active_cms = np.append(
-                new_active_cms, mask_feature.reshape((nRs, 1, nDs)), axis=1
-            )
-            cm_names.append(f"{mask_npi} >= {t}")
+        if not all_binary:
+            mask_ind = self.CMs.index(mask_npi)
+            for t in mask_thresholds:
+                mask_feature = self.active_cms[:, mask_ind, :] > t - 1
+                new_active_cms = np.append(
+                    new_active_cms, mask_feature.reshape((nRs, 1, nDs)), axis=1
+                )
+                cm_names.append(f"{mask_npi} >= {t}")
 
         nCMs = len(cm_names)
         include_npi = np.ones(nCMs, dtype=np.bool)
