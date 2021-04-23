@@ -63,7 +63,7 @@ if __name__ == "__main__":
         csv_cols.append(
             pd.Series(
                 fl(f.posterior.basic_R.mean(axis=-1))
-                / f.posterior.seasonality_multiplier[:, 0],
+                / fl(f.posterior.seasonality_multiplier[:, :, 0]),
                 name="no_seasonality_basic_R",
             )
         )
@@ -89,8 +89,8 @@ if __name__ == "__main__":
     if args.write_csv:
         for i, d in enumerate(f.posterior.alpha_i.T):
             csv_cols.append(pd.Series(fl(d), name=f"alpha/{s['cm_names'][i]}"))
-        print("CSV series lengths:", [len(c) for c in csv_cols])
-        df = pd.DataFrame(csv_cols)
+        assert all(len(c)==len(csv_cols[0]) for c in csv_cols)
+        df = pd.DataFrame({c.name: c for c in csv_cols})
         df.to_csv(
             args.summary_json.replace("_summary.json", "_stats.csv.xz"), index=False
         )
