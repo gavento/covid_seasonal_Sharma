@@ -1,13 +1,14 @@
+import json
 import time
 from datetime import datetime
 
 import arviz as az
+import jax.numpy as jnp
 import numpy as np
 import numpyro
-import json
 from jax import random
-import jax.numpy as jnp
-from numpyro.infer import MCMC, NUTS, init_to_median
+from jax.random import PRNGKey
+from numpyro.infer import MCMC, NUTS, Predictive, init_to_median
 
 
 def run_model(
@@ -211,7 +212,29 @@ def run_model(
     if save_results:
         print("Saving .netcdf")
         try:
-            inf_data = az.from_numpyro(mcmc)
+            try:
+                print("  computing posterior_samples ... ", end='')
+                posterior_samples = mcmc.get_samples()
+                posterior_predictive = Predictive(model_func, posterior_samples)(
+                    PRNGKey(1), data, ep, **model_kwargs
+                )
+                print("OK")
+            except:
+                posterior_predictive = None
+            try:
+                print("  computing prior samples ... ", end='')
+                prior = Predictive(model_func, num_samples=500)(
+                    PRNGKey(2), data, ep, **model_kwargs
+                )
+                print("OK")
+            except:
+                prior = None
+
+            inf_data = az.from_numpyro(
+                mcmc,
+                prior=prior,
+                posterior_predictive=posterior_predictive,
+            )
 
             if output_fname is None:
                 output_fname = f'{model_func.__name__}-{datetime.now(tz=None).strftime("%y-%m-%d_%H-%M-%S")}.netcdf'
