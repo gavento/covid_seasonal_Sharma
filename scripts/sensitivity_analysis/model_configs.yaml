@@ -2,3 +2,25 @@
 default:
   model_kwargs: {}
   featurize_kwargs: {}
+
+dataBraunerTE:
+  data_config:
+    data_path: "data/brauner_data_final_nov_temperate_north.csv"
+    new_variant_path: null
+    preprocess_data_kwargs:
+      start_date: "2020-01-22"
+      end_date: "2020-05-30"
+      household_feature_processing: "raw"
+      npi_start_col: 4
+    mask_from_date: "2020-05-30"
+  model_kwargs: {}
+  featurize_kwargs: 
+    all_binary: True
+    drop_npi_filter:
+      - {"query": "Mask Wearing", "type": "equals"}
+      - {"query": "Travel Screen/Quarantine", "type": "equals"}
+      - {"query": "Travel Bans", "type": "equals"}
+      - {"query": "Public Transport Limited", "type": "equals"}
+      - {"query": "Internal Movement Limited", "type": "equals"}
+      - {"query": "Public Information Campaigns", "type": "equals"}
+      - {"query": "Symptomatic Testing", "type": "equals"}

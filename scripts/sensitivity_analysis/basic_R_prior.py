@@ -37,12 +37,7 @@ if __name__ == "__main__":
     pprint_mb_dict(config)
 
     print("Loading Data")
-    data = preprocess_data(get_data_path())
-    data.featurize(**config["featurize_kwargs"])
-    data.mask_new_variant(
-        new_variant_fraction_fname=get_new_variant_path(),
-    )
-    data.mask_from_date("2021-01-09")
+    data = load_preprecess_data(config)
 
     print("Loading EpiParam")
     ep = EpidemiologicalParameters()
