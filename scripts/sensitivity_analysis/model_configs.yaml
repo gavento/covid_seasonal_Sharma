@@ -24,3 +24,18 @@ dataBraunerTE:
       - {"query": "Internal Movement Limited", "type": "equals"}
       - {"query": "Public Information Campaigns", "type": "equals"}
       - {"query": "Symptomatic Testing", "type": "equals"}
+
+dataGavinCx:
+  data_config:
+    data_path: "data/Gavin_Cx-master_data_mob_exclude_us_True_m_w.csv"
+    new_variant_path: null
+    preprocess_data_kwargs:
+      start_date: "2020-05-01"
+      end_date: "2020-09-21"
+      household_feature_processing: "raw"
+      npi_start_col: 4
+    mask_from_date: "2020-09-21"
+  model_kwargs: {}
+  featurize_kwargs: 
+    all_binary: True
+    drop_npi_filter: []
