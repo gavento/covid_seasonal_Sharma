@@ -9,6 +9,22 @@ import numpy as np
 import yaml
 
 from epimodel.models import *
+from epimodel import preprocess_data
+
+
+def load_preprecess_data(config):
+    data_config = config.get("data_config", {})
+    data = preprocess_data(
+        data_config.get("data_path", get_data_path()),
+        **data_config.get("preprocess_data_kwargs", {}),
+    )
+    data.featurize(**config["featurize_kwargs"])
+    nv_path = data_config.get("new_variant_path", get_new_variant_path())
+    if nv_path is not None:
+        data.mask_new_variant(new_variant_fraction_fname=nv_path)
+    data.mask_from_date(data_config.get("mask_from_date", "2021-01-09"))
+    print(f"CMs ({len(data.CMs)}): {data.CMs}")
+    return data
 
 
 def get_model_func_from_str(model_type_str):
@@ -32,7 +48,7 @@ def get_tree_depth_from_model_str(model_type_str):
     return 15
 
 
-def add_argparse_arguments(argparse):
+def add_argparse_arguments(argparse, add_overrides=False):
     """
     add argparse arguments to scripts
 
