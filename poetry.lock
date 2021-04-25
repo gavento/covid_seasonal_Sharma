@@ -1180,6 +1180,14 @@ jax = ["jax", "jaxlib"]
 tfds = ["tfds-nightly"]
 
 [[package]]
+name = "threadpoolctl"
+version = "2.1.0"
+description = "threadpoolctl"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -1313,7 +1321,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "de71f3a2eeac05288d3647f0d0aaf31338953b4c1820b306daaec4c6d9ac7e6b"
+content-hash = "5a14c6356500cdecc33932db978756563561467e0f5d75a46fb74cb22298c0bf"
 
 [metadata.files]
 absl-py = [
@@ -2110,6 +2118,10 @@ testpath = [
 ]
 tfp-nightly = [
     {file = "tfp_nightly-0.13.0.dev20210331-py2.py3-none-any.whl", hash = "sha256:b4198230065dac81e6b5a35941f53e4df34d58b20dfcbdd4d57e603b9f6c15bf"},
+]
+threadpoolctl = [
+    {file = "threadpoolctl-2.1.0-py3-none-any.whl", hash = "sha256:38b74ca20ff3bb42caca8b00055111d74159ee95c4370882bbff2b93d24da725"},
+    {file = "threadpoolctl-2.1.0.tar.gz", hash = "sha256:ddc57c96a38beb63db45d6c159b5ab07b6bced12c45a1f07b2b92f272aebfa6b"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

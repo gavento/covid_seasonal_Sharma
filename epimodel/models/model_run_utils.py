@@ -6,6 +6,7 @@ import arviz as az
 import jax.numpy as jnp
 import numpy as np
 import numpyro
+import threadpoolctl
 from jax import random
 from jax.random import PRNGKey
 from numpyro.infer import MCMC, NUTS, Predictive, init_to_median
