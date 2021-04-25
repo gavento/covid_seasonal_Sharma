@@ -87,15 +87,16 @@ def run_model(
 
     # also collect some extra information for better diagonstics!
     print(f"Warmup Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    mcmc.warmup(
-        rng_key,
-        data,
-        ep,
-        **model_kwargs,
-        collect_warmup=True,
-        extra_fields=["num_steps", "mean_accept_prob", "adapt_state"],
-    )
-    mcmc.get_extra_fields()["num_steps"].block_until_ready()
+    with threadpoolctl.threadpool_limits(limits=1):
+        mcmc.warmup(
+            rng_key,
+            data,
+            ep,
+            **model_kwargs,
+            collect_warmup=True,
+            extra_fields=["num_steps", "mean_accept_prob", "adapt_state"],
+        )
+        mcmc.get_extra_fields()["num_steps"].block_until_ready()
 
     info_dict["warmup"] = {}
     info_dict["warmup"]["num_steps"] = np.array(
@@ -128,18 +129,19 @@ def run_model(
     warmup_samples = mcmc.get_samples()
 
     print(f"Sample Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    mcmc.run(
-        rng_key,
-        data,
-        ep,
-        **model_kwargs,
-        extra_fields=["num_steps", "mean_accept_prob", "adapt_state"],
-    )
+    with threadpoolctl.threadpool_limits(limits=1):
+        mcmc.run(
+            rng_key,
+            data,
+            ep,
+            **model_kwargs,
+            extra_fields=["num_steps", "mean_accept_prob", "adapt_state"],
+        )
 
-    posterior_samples = mcmc.get_samples()
-    # if you don't block this, the timer won't quite work properly.
-    posterior_samples[list(posterior_samples.keys())[0]].block_until_ready()
-    print(f"Sample Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        posterior_samples = mcmc.get_samples()
+        # if you don't block this, the timer won't quite work properly.
+        posterior_samples[list(posterior_samples.keys())[0]].block_until_ready()
+        print(f"Sample Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     end = time.time()
     time_per_sample = float(end - start) / num_samples
