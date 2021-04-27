@@ -53,14 +53,14 @@ seasonality_maxRday_fixed:
 
 seasonality_basic_R_hyperprior_maxRday_normal:
   experiment_file: seasonality.py
-  experiment_tag: seasonality_basic_R_hyperprior_maxRday
+  experiment_tag: seasonality_basic_R_hyperprior_max_R_day
   args:
     basic_R_prior: "hyper"
     max_R_day_prior: "normal"
 
 seasonality_basic_R_hyperprior_maxRday_fixed:
   experiment_file: seasonality.py
-  experiment_tag: seasonality_basic_R_hyperprior_maxRday
+  experiment_tag: seasonality_basic_R_hyperprior_max_R_day
   args:
     basic_R_prior: "hyper"
     max_R_day_prior: "fixed"
@@ -73,6 +73,66 @@ seasonality_basic_R_hyperprior_maxRday_fixed:
       - -13
       - -27
 
+### Brauner data variants
+
+seasonality_basic_R_normal_Brauner:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_basic_R_prior
+  args:
+    basic_R_prior: "normal"
+    basic_R_mean:
+      - 3.3  # default for Brauner is 3.28
+      - 3.1
+      - 2.9
+      - 2.7
+      - 3.5
+      - 3.7
+    basic_R_scale:
+      - 0.3  # default
+
+seasonality_maxRday_normal_Brauner:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_max_R_day
+  args:
+    basic_R_prior: "normal"
+    basic_R_mean:
+      - 3.3  # default for Brauner is 3.28
+    basic_R_scale:
+      - 0.3  # default
+    max_R_day_prior: "normal"
+
+seasonality_maxRday_fixed_Brauner:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_max_R_day
+  args:
+    basic_R_prior: "normal"
+    basic_R_mean:
+      - 3.3  # default for Brauner is 3.28
+    basic_R_scale:
+      - 0.3  # default
+    max_R_day_prior: "fixed"
+    max_R_day:
+      - 1
+      - 15
+      - 29
+      - 43
+      - 57
+      - -13
+      - -27
+
+basic_R_normal_Brauner:
+  experiment_file: basic_R_prior.py
+  experiment_tag: basic_R_prior_mean
+  args:
+    basic_R_scale:
+      - 0.3
+    basic_R_mean:
+      - 3.3  # default for Brauner is 3.28
+      - 3.1
+      - 2.9
+      - 2.7
+      - 3.5
+      - 3.7
 
 ### Original paper experiments
 
