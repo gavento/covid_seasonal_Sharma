@@ -44,10 +44,12 @@ seasonality_maxRday_fixed:
     max_R_day_prior: "fixed"
     max_R_day:
       - 1
-      - 16
-      - 31
-      - 336
-      - 351
+      - 15
+      - 29
+      - 43
+      - 57
+      - -13
+      - -27
 
 seasonality_basic_R_hyperprior_maxRday_normal:
   experiment_file: seasonality.py
@@ -64,10 +66,12 @@ seasonality_basic_R_hyperprior_maxRday_fixed:
     max_R_day_prior: "fixed"
     max_R_day:
       - 1
-      - 16
-      - 31
-      - 336
-      - 351
+      - 15
+      - 29
+      - 43
+      - 57
+      - -13
+      - -27
 
 
 ### Original paper experiments
