@@ -79,7 +79,7 @@ argparser.add_argument(
     "--max_R_day_scale",
     dest="max_R_day_scale",
     type=float,
-    default=45.0,
+    default=42.0,
     help="Scale for for the day of the seasonally-highest R (mean is 1 = Jan 1)",
 )
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     elif args.max_R_day_prior == "normal":
         max_R_day_prior = {
             "type": "normal",
-            "mean": 0.0,
+            "mean": 1.0,
             "scale": float(args.max_R_day_scale),
         }
     else:
