@@ -69,13 +69,11 @@ def sample_basic_R(nRs, basic_r_prior=None):
         basic_r_prior = {"mean": 1.35, "type": "trunc_normal", "variability": 0.3}
 
     if basic_r_prior["type"] == "trunc_normal":
-        basic_R = numpyro.sample(
-            "basic_R",
-            dist.TruncatedNormal(
-                low=0.1,
-                loc=basic_r_prior["mean"],
-                scale=basic_r_prior["variability"] * jnp.ones(nRs),
-            ),
+        basic_R_prior_mean = numpyro.deterministic(
+            "basic_R_prior_mean", basic_r_prior["mean"]
+        )
+        basic_R_prior_scale = numpyro.deterministic(
+            "basic_R_prior_scale", basic_r_prior["variability"]
         )
     elif basic_r_prior["type"] == "hyper_trunc_normal":
         basic_R_prior_mean = numpyro.sample(
@@ -90,16 +88,19 @@ def sample_basic_R(nRs, basic_r_prior=None):
                 low=0.01, loc=0.3, scale=1.0 * basic_r_prior["hyper_scale"]
             ),
         )
-        basic_R = numpyro.sample(
-            "basic_R",
-            dist.TruncatedNormal(
-                low=0.1,
-                loc=basic_R_prior_mean,
-                scale=basic_R_prior_scale * jnp.ones(nRs),
-            ),
-        )
     else:
-        raise ValueError("Basic R prior type must be in [trunc_normal, hyper_trunc_normal]")
+        raise ValueError(
+            "Basic R prior type must be in [trunc_normal, hyper_trunc_normal]"
+        )
+
+    basic_R = numpyro.sample(
+        "basic_R",
+        dist.TruncatedNormal(
+            low=0.1,
+            loc=basic_R_prior_mean,
+            scale=basic_R_prior_scale * jnp.ones(nRs),
+        ),
+    )
 
     return basic_R
 
