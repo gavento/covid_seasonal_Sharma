@@ -137,7 +137,14 @@ def get_summary_save_keys():
     """
     :return: numpyro variables to save, if available
     """
-    return ["alpha_i"]
+    return [
+        "alpha_i",
+        "seasonality_beta1",
+        "seasonality_max_R_day",
+        "basic_R_prior_mean",
+        "basic_R_prior_scale",
+        "r_walk_noise_scale",
+    ]
 
 
 def get_data_path():
