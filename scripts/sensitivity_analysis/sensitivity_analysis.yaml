@@ -45,7 +45,6 @@ basic_R_normal_Sharma:
   experiment_file: basic_R_prior.py
   experiment_tag: basic_R_prior_mean
   args:
-    basic_R_prior: "normal"
     basic_R_mean:
       - 1.35  # default
       - 1.1
@@ -58,7 +57,6 @@ default_Sharma:
   experiment_file: basic_R_prior.py
   experiment_tag: default
   args:
-    basic_R_prior: "normal"
     basic_R_scale:
       - 0.3
     basic_R_mean:
@@ -150,7 +148,6 @@ basic_R_normal_Brauner:
   experiment_file: basic_R_prior.py
   experiment_tag: basic_R_prior_mean
   args:
-    basic_R_prior: "normal"
     basic_R_scale:
       - 0.3
     basic_R_mean:
@@ -164,7 +161,6 @@ default_Brauner:
   experiment_file: basic_R_prior.py
   experiment_tag: default
   args:
-    basic_R_prior: "normal"
     basic_R_scale:
       - 0.3
     basic_R_mean:
