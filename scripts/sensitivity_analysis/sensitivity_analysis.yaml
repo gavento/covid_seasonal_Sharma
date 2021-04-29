@@ -19,16 +19,6 @@ seasonality_basic_R_normal:
     basic_R_scale:
       - 0.3  # default
 
-seasonality_basic_R_hyper:
-  experiment_file: seasonality.py
-  experiment_tag: seasonality_basic_R_hyperprior_scale
-  args:
-    basic_R_prior: "hyper"
-    basic_R_hyper_scale:
-      - 1.0
-      - 0.5
-      - 2.0
-
 seasonality_maxRday_normal:
   experiment_file: seasonality.py
   experiment_tag: seasonality_max_R_day_normal
@@ -48,6 +38,18 @@ seasonality_maxRday_fixed:
       - 57
       - -13
       - -27
+
+## R hyperprior experiments
+
+seasonality_basic_R_hyperprior:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_basic_R_hyperprior_scale
+  args:
+    basic_R_prior: "hyper"
+    basic_R_hyper_scale:
+      - 1.0
+      - 0.5
+      - 2.0
 
 seasonality_basic_R_hyperprior_maxRday_normal:
   experiment_file: seasonality.py
@@ -117,7 +119,7 @@ seasonality_maxRday_fixed_Brauner:
       - -13
       - -27
 
-# Non-seasonal (for comparison)
+## Non-seasonal (for comparison)
 
 basic_R_normal_Brauner:
   experiment_file: basic_R_prior.py
