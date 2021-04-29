@@ -46,6 +46,7 @@ basic_R_normal_Sharma:
   experiment_tag: basic_R_prior_mean
   args:
     basic_R_prior: "normal"
+    basic_R_mean:
       - 1.35  # default
       - 1.1
       - 1.7
