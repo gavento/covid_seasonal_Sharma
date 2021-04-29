@@ -68,9 +68,6 @@ if __name__ == "__main__":
     print("Loading Data")
     data = load_preprecess_data(config)
 
-    print(data.Rs, data.Ds, data.CMs)
-    print(data.active_cms)
-
     print("Loading EpiParam")
     ep = EpidemiologicalParameters()
 
