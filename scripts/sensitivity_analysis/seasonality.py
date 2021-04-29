@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 sys.path.append(os.getcwd())  # add current working directory to the path
 
@@ -94,6 +95,7 @@ if __name__ == "__main__":
         )
         ts_str = datetime.now().strftime("%Y%m%d-%H%M%S")
         args.output_base = os.path.join(base_outpath, f"{ts_str}-{os.getpid()}")
+    Path(args.output_base).parent.mkdir(parents=True, exist_ok=True)
     log_output = f"{args.output_base}.log"
     summary_output = f"{args.output_base}_summary.json"
     full_output = f"{args.output_base}_full.netcdf"
