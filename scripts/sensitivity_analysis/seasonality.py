@@ -149,6 +149,8 @@ if __name__ == "__main__":
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
     model_build_dict["basic_R_prior"] = basic_R_prior
     model_build_dict["max_R_day_prior"] = max_R_day_prior
+    
+    print("model_build_dict:", model_build_dict)
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,

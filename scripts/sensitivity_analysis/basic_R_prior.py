@@ -39,6 +39,9 @@ if __name__ == "__main__":
     print("Loading Data")
     data = load_preprecess_data(config)
 
+    print(data.Rs, data.Ds, data.CMs)
+    print(data.active_cms)
+
     print("Loading EpiParam")
     ep = EpidemiologicalParameters()
 
@@ -61,6 +64,8 @@ if __name__ == "__main__":
 
     model_build_dict = config["model_kwargs"]
     model_build_dict["basic_R_prior"] = basic_R_prior
+
+    print("model_build_dict:", model_build_dict)
 
     posterior_samples, _, info_dict, _ = run_model(
         model_func,
