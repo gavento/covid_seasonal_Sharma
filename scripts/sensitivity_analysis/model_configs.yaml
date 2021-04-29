@@ -3,15 +3,28 @@ default:
   model_kwargs: {}
   featurize_kwargs: {}
 
-dataBraunerTE:
+modelSharma_dataSharma:
   data_config:
-    data_path: "data/brauner_data_final_nov_temperate_north.csv"
+    data_path: "d/modelSharma_dataSharma.csv"
+    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    preprocess_data_kwargs:
+      start_date: "2020-08-01"
+      end_date: "2021-01-22"
+    mask_from_date: "2021-01-09"
+  model_kwargs: {}
+  featurize_kwargs: 
+    drop_npi_filter:
+      - {"query": "Childcare Closed", "type": "equals"}
+      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
+
+modelSharma_dataBraunerTE:
+  data_config:
+    data_path: "d/modelSharma_dataBraunerTE.csv"
     new_variant_path: null
     preprocess_data_kwargs:
       start_date: "2020-01-22"
       end_date: "2020-05-30"
       household_feature_processing: "raw"
-      npi_start_col: 4
     mask_from_date: "2020-05-30"
   model_kwargs: {}
   featurize_kwargs: 
@@ -25,7 +38,7 @@ dataBraunerTE:
       - {"query": "Public Information Campaigns", "type": "equals"}
       - {"query": "Symptomatic Testing", "type": "equals"}
 
-dataGavinCx:
+modelSharma_dataGavinCx:
   data_config:
     data_path: "data/Gavin_Cx-master_data_mob_exclude_us_True_m_w.csv"
     new_variant_path: null
