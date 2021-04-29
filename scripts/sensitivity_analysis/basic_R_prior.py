@@ -1,15 +1,26 @@
-import sys, os
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 sys.path.append(os.getcwd())  # add current working directory to the path
-
-from epimodel import EpidemiologicalParameters, run_model, preprocess_data
-from epimodel.script_utils import *
 
 import argparse
 import json
 from datetime import datetime
 
+from epimodel import EpidemiologicalParameters, preprocess_data, run_model
+from epimodel.script_utils import *
+
 argparser = argparse.ArgumentParser()
+argparser.add_argument(
+    "--output_base",
+    dest="output_base",
+    type=str,
+    help="Override destination path prefix (adding '.log', '_summary.json', '_full.netcdf')",
+    default="",
+)
+
 argparser.add_argument(
     "--basic_R_mean",
     dest="basic_R_mean",
@@ -32,6 +43,24 @@ import numpyro
 numpyro.set_host_device_count(args.num_chains)
 
 if __name__ == "__main__":
+
+    if not args.output_base:
+        base_outpath = generate_base_output_dir(
+            args.model_type, args.model_config, args.exp_tag
+        )
+        ts_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+        args.output_base = os.path.join(base_outpath, f"{ts_str}-{os.getpid()}")
+    Path(args.output_base).parent.mkdir(parents=True, exist_ok=True)
+    log_output = f"{args.output_base}.log"
+    summary_output = f"{args.output_base}_summary.json"
+    full_output = f"{args.output_base}_full.netcdf"
+    logprocess = subprocess.Popen(["/usr/bin/tee", log_output], stdin=subprocess.PIPE)
+    os.close(sys.stdout.fileno())
+    os.dup2(logprocess.stdin.fileno(), sys.stdout.fileno())
+    os.close(sys.stderr.fileno())
+    os.dup2(logprocess.stdin.fileno(), sys.stderr.fileno())
+
+
     print(f"Running Sensitivity Analysis {__file__} with config:")
     config = load_model_config(args.model_config)
     pprint_mb_dict(config)
@@ -48,13 +77,6 @@ if __name__ == "__main__":
     model_func = get_model_func_from_str(args.model_type)
     ta = get_target_accept_from_model_str(args.model_type)
     td = get_tree_depth_from_model_str(args.model_type)
-
-    base_outpath = generate_base_output_dir(
-        args.model_type, args.model_config, args.exp_tag
-    )
-    ts_str = datetime.now().strftime("%Y-%m-%d;%H:%M:%S")
-    summary_output = os.path.join(base_outpath, f"{ts_str}_summary.json")
-    full_output = os.path.join(base_outpath, f"{ts_str}_full.netcdf")
 
     basic_R_prior = {
         "mean": args.basic_R_mean,
