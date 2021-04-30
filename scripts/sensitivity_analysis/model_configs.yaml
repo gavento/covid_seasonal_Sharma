@@ -25,6 +25,8 @@ modelSharma_dataBraunerTE:
       start_date: "2020-01-22"
       end_date: "2020-05-30"
       household_feature_processing: "raw"
+      mask_cum_cases_under: 10
+      mask_cum_deaths_under: 100
     mask_from_date: "2020-05-30"
   model_kwargs: {}
   featurize_kwargs: 
@@ -37,6 +39,8 @@ modelSharma_dataBraunerTE:
       - {"query": "Internal Movement Limited", "type": "equals"}
       - {"query": "Public Information Campaigns", "type": "equals"}
       - {"query": "Symptomatic Testing", "type": "equals"}
+
+## Unused for now
 
 modelSharma_dataGavinCx:
   data_config:
