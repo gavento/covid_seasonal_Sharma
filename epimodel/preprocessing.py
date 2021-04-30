@@ -14,6 +14,8 @@ def preprocess_data(
     npi_start_col=3,
     skipcases=8,
     skipdeaths=26,
+    mask_cum_cases_under=0,
+    mask_cum_deaths_under=0,
     household_feature_processing="implicit",
 ):
     """
@@ -138,6 +140,11 @@ def preprocess_data(
     # do this to make sure.
     new_cases.data[new_cases.data < 0] = 0
     new_deaths.data[new_deaths.data < 0] = 0
+
+    # mask days with too low CUMMULATIVE numbers (for Brauner data - especially zeros may be problematic)
+    print(f"masking {(new_cases.cumsum(axis=1) < mask_cum_cases_under).sum()} + {(new_deaths.cumsum(axis=1) < mask_cum_deaths_under).sum()} small values (cummulative)")
+    new_cases[new_cases.cumsum(axis=1) < mask_cum_cases_under] = np.ma.masked
+    new_deaths[new_deaths.cumsum(axis=1) < mask_cum_deaths_under] = np.ma.masked
 
     new_cases[:, :skipcases] = np.ma.masked
     new_deaths[:, :skipdeaths] = np.ma.masked
