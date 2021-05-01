@@ -40,7 +40,7 @@ modelSharma_dataBraunerTE:
       - {"query": "Public Information Campaigns", "type": "equals"}
       - {"query": "Symptomatic Testing", "type": "equals"}
 
-modelSharma_dataBraunerW:
+modelSharma_dataBrauner:
   data_config:
     data_path: "d/modelSharma_dataBrauner.csv"
     new_variant_path: null
