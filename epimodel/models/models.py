@@ -93,8 +93,6 @@ def default_model(
         jnp.exp(
             jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise
         )
-        * seasonality_multiplier.reshape((1, data.nDs))
-        / seasonality_multiplier[0],
     )
 
     # Infection Model
