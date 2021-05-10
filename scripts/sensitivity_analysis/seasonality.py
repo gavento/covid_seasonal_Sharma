@@ -84,6 +84,12 @@ argparser.add_argument(
     help="Scale for for the day of the seasonally-highest R (mean is 1 = Jan 1)",
 )
 
+argparser.add_argument(
+    "--brauner_params",
+    action="store_true",
+    help="Use the epidemiological parameters from Brauner et al. model",
+)
+
 args = argparser.parse_args()
 
 if __name__ == "__main__":
@@ -113,7 +119,19 @@ if __name__ == "__main__":
     data = load_preprecess_data(config)
 
     print("Loading EpiParam")
-    ep = EpidemiologicalParameters()
+    if args.brauner_params:
+        ep = EpidemiologicalParameters(
+            generation_interval={"mean": 5.06, "sd": 2.11, "dist": "gamma"},
+            incubation_period={"mean": 1.53, "sd": 0.418, "dist": "gamma"},
+        )
+        # Generate directly from infection dists
+        ep.DPC = ep.generate_dist_vector({"mean": 10.9, "disp": 5.4, "dist": "negbiom"}, int(1e7), ep.cd_truncation)
+        ep.DPD = ep.generate_dist_vector({"mean": 21.8, "disp": 14.2, "dist": "negbiom"}, int(1e7), ep.dd_truncation)
+        # Make sure these are not used further
+        ep.onset_to_case_delay = None
+        ep.onset_to_death_delay = None
+    else:
+        ep = EpidemiologicalParameters()
 
     model_func = seasonality_model
     ta = get_target_accept_from_model_str(args.model_type)
@@ -151,7 +169,7 @@ if __name__ == "__main__":
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
     model_build_dict["basic_R_prior"] = basic_R_prior
     model_build_dict["max_R_day_prior"] = max_R_day_prior
-    
+
     print("model_build_dict:", model_build_dict)
 
     posterior_samples, _, info_dict, _ = run_model(

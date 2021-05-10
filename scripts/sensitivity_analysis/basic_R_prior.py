@@ -35,6 +35,12 @@ argparser.add_argument(
     help="Basic R scale",
 )
 
+argparser.add_argument(
+    "--brauner_params",
+    action="store_true",
+    help="Use the epidemiological parameters from Brauner et al. model",
+)
+
 add_argparse_arguments(argparser)
 args = argparser.parse_args()
 
@@ -69,7 +75,19 @@ if __name__ == "__main__":
     data = load_preprecess_data(config)
 
     print("Loading EpiParam")
-    ep = EpidemiologicalParameters()
+    if args.brauner_params:
+        ep = EpidemiologicalParameters(
+            generation_interval={"mean": 5.06, "sd": 2.11, "dist": "gamma"},
+            incubation_period={"mean": 1.53, "sd": 0.418, "dist": "gamma"},
+        )
+        # Generate directly from infection dists
+        ep.DPC = ep.generate_dist_vector({"mean": 10.9, "disp": 5.4, "dist": "negbiom"}, int(1e7), ep.cd_truncation)
+        ep.DPD = ep.generate_dist_vector({"mean": 21.8, "disp": 14.2, "dist": "negbiom"}, int(1e7), ep.dd_truncation)
+        # Make sure these are not used further
+        ep.onset_to_case_delay = None
+        ep.onset_to_death_delay = None
+    else:
+        ep = EpidemiologicalParameters()
 
     model_func = get_model_func_from_str(args.model_type)
     ta = get_target_accept_from_model_str(args.model_type)
