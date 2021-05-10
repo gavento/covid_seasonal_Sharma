@@ -87,6 +87,15 @@ def default_model(
     numpyro.deterministic(
         "Rt_cm", jnp.exp(jnp.log(basic_R.reshape((data.nRs, 1))) - cm_reduction)
     )
+    # Rt before applying cm_reductions
+    numpyro.deterministic(
+        "Rt0",
+        jnp.exp(
+            jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise
+        )
+        * seasonality_multiplier.reshape((1, data.nDs))
+        / seasonality_multiplier[0],
+    )
 
     # Infection Model
     seeding_padding = n_days_seeding
@@ -1041,6 +1050,15 @@ def seasonality_model(
     numpyro.deterministic("Rt_walk", jnp.exp(full_log_Rt_noise))
     numpyro.deterministic(
         "Rt_cm", jnp.exp(jnp.log(basic_R.reshape((data.nRs, 1))) - cm_reduction)
+    )
+    # Rt before applying cm_reductions
+    numpyro.deterministic(
+        "Rt0",
+        jnp.exp(
+            jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise
+        )
+        * seasonality_multiplier.reshape((1, data.nDs))
+        / seasonality_multiplier[0],
     )
 
     # Infection Model
