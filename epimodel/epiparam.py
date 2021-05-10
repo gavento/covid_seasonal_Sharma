@@ -110,7 +110,7 @@ class EpidemiologicalParameters:
             theta = sd ** 2 / mean
             samples = np.random.gamma(k, theta, size=nRVs)
         elif dist["dist"] == "negbinom":
-            disp = dist["mean"]
+            disp = dist["disp"]
             p = disp / (disp + mean)
             samples = np.random.negative_binomial(disp, p, size=nRVs)
 
