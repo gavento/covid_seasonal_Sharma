@@ -1,23 +1,14 @@
-# Code for: Understanding the effectiveness of government interventions in Europe's second wave of COVID-19
+# Seasonal model of Sharma et al. COVID-19 Nonpharmaceutical Interventions Effectiveness
 
-This repo contains the code for [Sharma et al. (2021), *Understanding the effectiveness of government interventions in Europe’s second wave of COVID-19*](https://www.medrxiv.org/content/10.1101/2021.03.25.21254330v1). **Note**: this paper is a preprint and has not yet been peer-reviewed.  
+This repository contains the data and code used in the paper [Gavenčiak et al.: *Seasonal variation in SARS-CoV-2 transmission in temperate climates*](TODO). **Note**: this paper is a preprint and has not yet been peer-reviewed.  
 
-# Installation
-We use Poetry for dependency management and use Python 3.8. Please see [Python Poetry](https://python-poetry.org/) for installation instructions for poetry. 
+This repository contains the seasonal variant of the model of [Sharma et al. (2021), *Understanding the effectiveness of government interventions in Europe’s second wave of COVID-19*](https://www.medrxiv.org/content/10.1101/2021.03.25.21254330v1) and has been forked from [MrinankSharma/COVID19NPISecondWave](https://github.com/MrinankSharma/COVID19NPISecondWave); please see that repo for further details.
 
-Running `poetry install`, once Poetry has been installed, will setup a virtual environment and install project dependecies. You can then run `poetry shell` to launch a shell instance where the `virtualenv` is active. 
+For the seasonal variant of the model of [Brauner et al. *Inferring the effectiveness of government interventions against COVID-19*](https://www.medrxiv.org/content/10.1101/2020.05.28.20116129v2.article-info), see the repository [gavento/covid_seasonal_Brauner](https://github.com/gavento/covid_seasonal_Brauner).
 
-# Repository Structure
-The most important files are:
-* `epimodel/models/models.py` contains the main models, implemented in Numpyro, used for this project. 
-* `epimodel/epiparam.py` contains the `EpidemiologicalParameters` class, used to store and discretise delay distributions. 
-* `epimodel/preprocessing.py` contains the `preprocess_data` function used to load data, as well as the `PreprocessedData` class definition. 
+# Data
 
-Other notes:
-* `epimodel/models/model_run_utils.py` contains a `run_model` utility function. 
-* `epimodel/models/model_build_utils.py` contains a model build utility functions that can be used to build new models. 
-* `epimodel/plotting` contains some plotting helpers. 
-* `epimodel/distributions/asymmetric_laplace` contains the asymmetric laplace distribution, used for the NPI prior. 
+**This repo currently only contains synthetic data. The real data is available upon request. Please email Jan Brauner at jan.brauner at cs dot ox dot ac dot uk**
 
 # Reproducing Results
 An example main model run is in ``notebooks/final_results/main_results.ipynb``. 
@@ -57,4 +48,5 @@ python scripts/sensitivity_dispatcher.py --max_parallel_runs 24 --model_type def
 All plotting code is in the `notebooks/final_results` folder. See `validation_plotter` (Fig. 3), `main_result_plotter` (Fig. 1, other plots also) and `sensitivity_analysis_plotter` (Appendix plots). 
 
 # Questions?
-Please email Mrinank Sharma (`mrinank` at `robots` dot `ac` dot `uk`) for questions regarding the codebase.
+
+Please email Tomáš Gavenčiak (`gavento` at `ucw` dot `cz`) or Mrinank Sharma (`mrinank` at `robots` dot `ac` dot `uk`) for questions regarding the codebase.
