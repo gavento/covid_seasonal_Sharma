@@ -1,6 +1,6 @@
 # Seasonal model of Sharma et al. COVID-19 Nonpharmaceutical Interventions Effectiveness
 
-This repository contains the data and code used in the paper [Gavenčiak et al.: *Seasonal variation in SARS-CoV-2 transmission in temperate climates*](TODO). **Note**: this paper is a preprint and has not yet been peer-reviewed.  
+This repository contains one part of the code used in the paper [Gavenčiak et al.: *Seasonal variation in SARS-CoV-2 transmission in temperate climates*](TODO). **Note**: this paper is a preprint and has not yet been peer-reviewed.  
 
 This repository contains the seasonal variant of the model of [Sharma et al. (2021), *Understanding the effectiveness of government interventions in Europe’s second wave of COVID-19*](https://www.medrxiv.org/content/10.1101/2021.03.25.21254330v1) and has been forked from [MrinankSharma/COVID19NPISecondWave](https://github.com/MrinankSharma/COVID19NPISecondWave); please see that repo for further details.
 
