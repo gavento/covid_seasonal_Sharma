@@ -142,7 +142,9 @@ def preprocess_data(
     new_deaths.data[new_deaths.data < 0] = 0
 
     # mask days with too low CUMMULATIVE numbers (for Brauner data - especially zeros may be problematic)
-    print(f"masking {(new_cases.cumsum(axis=1) < mask_cum_cases_under).sum()} + {(new_deaths.cumsum(axis=1) < mask_cum_deaths_under).sum()} small values (cummulative)")
+    print(
+        f"masking {(new_cases.cumsum(axis=1) < mask_cum_cases_under).sum()} + {(new_deaths.cumsum(axis=1) < mask_cum_deaths_under).sum()} small values (cummulative)"
+    )
     new_cases[new_cases.cumsum(axis=1) < mask_cum_cases_under] = np.ma.masked
     new_deaths[new_deaths.cumsum(axis=1) < mask_cum_deaths_under] = np.ma.masked
 
@@ -265,6 +267,7 @@ class PreprocessedData(object):
             "Primary Schools Closed",
             "Secondary Schools Closed",
             "Universities Away",
+            "Mobility decrease",
         ]
 
         def aggregate_numerical_npis(agg_type, cm_a_ind, cm_b_ind, active_cms_in):
