@@ -17,6 +17,48 @@ modelSharma_dataSharma:
       - {"query": "Childcare Closed", "type": "equals"}
       - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
 
+modelSharma_dataSharma_countryMobility1:
+  data_config:
+    data_path: "d/modelSharma_dataSharma_countryMobility_RecreGrocTransWorkResid.csv"
+    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    preprocess_data_kwargs:
+      start_date: "2020-08-01"
+      end_date: "2021-01-22"
+    mask_from_date: "2021-01-09"
+  model_kwargs: {}
+  featurize_kwargs: 
+    drop_npi_filter:
+      - {"query": "Childcare Closed", "type": "equals"}
+      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
+
+modelSharma_dataSharma_countryMobility2:
+  data_config:
+    data_path: "d/modelSharma_dataSharma_countryMobility_GrocTransWorkResid.csv"
+    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    preprocess_data_kwargs:
+      start_date: "2020-08-01"
+      end_date: "2021-01-22"
+    mask_from_date: "2021-01-09"
+  model_kwargs: {}
+  featurize_kwargs: 
+    drop_npi_filter:
+      - {"query": "Childcare Closed", "type": "equals"}
+      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
+
+modelSharma_dataSharma_countryMobility3:
+  data_config:
+    data_path: "d/modelSharma_dataSharma_countryMobility_GrocTransWork.csv"
+    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    preprocess_data_kwargs:
+      start_date: "2020-08-01"
+      end_date: "2021-01-22"
+    mask_from_date: "2021-01-09"
+  model_kwargs: {}
+  featurize_kwargs: 
+    drop_npi_filter:
+      - {"query": "Childcare Closed", "type": "equals"}
+      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
+
 modelSharma_dataBraunerTE:
   data_config:
     data_path: "d/modelSharma_dataBraunerTE.csv"
