@@ -39,6 +39,20 @@ seasonality_maxRday_fixed_Sharma:
       - -13
       - -27
 
+seasonality_local_Sharma:
+  experiment_file: seasonality.py
+  experiment_tag: seasonality_local
+  args:
+    max_R_day_prior: "fixed"
+    max_R_day: 1
+    different_seasonality: True
+    local_seasonality_sd:
+      - 0.02
+      - 0.05
+      - 0.1
+      - 0.2
+      - 0.5
+
 ## Non-seasonal - Sharma (for comparison)
 
 basic_R_normal_Sharma:

@@ -452,6 +452,9 @@ class PreprocessedData(object):
 
         cm_names = []
         for bin_npi in binary_npis:
+            if bin_npi not in self.CMs:
+                print(f"Warning: skipping absent feature {bin_npi}")
+                continue
             old_index = self.CMs.index(bin_npi)
             new_cm_feature = self.active_cms[:, old_index, :]
             new_active_cms = np.append(

@@ -144,6 +144,7 @@ def get_summary_save_keys():
         "basic_R_prior_mean",
         "basic_R_prior_scale",
         "r_walk_noise_scale",
+        "seasonality_local_beta1",
     ]
 
 

@@ -89,10 +89,7 @@ def default_model(
     )
     # Rt before applying cm_reductions
     numpyro.deterministic(
-        "Rt0",
-        jnp.exp(
-            jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise
-        )
+        "Rt0", jnp.exp(jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise)
     )
 
     # Infection Model
@@ -946,6 +943,8 @@ def seasonality_model(
     output_noise_scale_prior=5.0,
     seasonality_prior="uniform",
     max_R_day_prior=None,
+    different_seasonality=False,
+    local_seasonality_sd=0.1,
     **kwargs,
 ):
     """
@@ -1008,11 +1007,27 @@ def seasonality_model(
     else:
         raise Exception("Invalid seasonality_prior")
 
+    seasonality_beta1_bc = seasonality_beta1 * jnp.ones(data.nRs)
+    if different_seasonality:
+        seasonality_local_beta1 = numpyro.sample(
+            "seasonality_local_beta1",
+            dist.Normal(seasonality_beta1_bc, scale=local_seasonality_sd),
+        )
+    else:
+        seasonality_local_beta1 = numpyro.deterministic(
+            "seasonality_local_beta1", seasonality_beta1_bc
+        )
+
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
         1.0
-        + seasonality_beta1
-        * jnp.cos((data.Ds_day_of_year - seasonality_max_R_day) / 365.0 * 2.0 * jnp.pi),
+        + seasonality_local_beta1.reshape((data.nRs, 1))
+        * jnp.cos(
+            (data.Ds_day_of_year - seasonality_max_R_day).reshape((1, data.nDs))
+            / 365.0
+            * 2.0
+            * jnp.pi
+        ),
     )
 
     # rescaling variables by 10 for better NUTS adaptation
@@ -1040,8 +1055,8 @@ def seasonality_model(
         jnp.exp(
             jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise - cm_reduction
         )
-        * seasonality_multiplier.reshape((1, data.nDs))
-        / seasonality_multiplier[0],
+        * seasonality_multiplier
+        / seasonality_multiplier[:, :1],  # First day multipliers for every region
     )
 
     # collect variables in the numpyro trace
@@ -1052,11 +1067,9 @@ def seasonality_model(
     # Rt before applying cm_reductions
     numpyro.deterministic(
         "Rt0",
-        jnp.exp(
-            jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise
-        )
-        * seasonality_multiplier.reshape((1, data.nDs))
-        / seasonality_multiplier[0],
+        jnp.exp(jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise)
+        * seasonality_multiplier
+        / seasonality_multiplier[:, :1],
     )
 
     # Infection Model

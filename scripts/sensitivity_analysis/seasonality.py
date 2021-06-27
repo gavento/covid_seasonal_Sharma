@@ -90,6 +90,10 @@ argparser.add_argument(
     help="Use the epidemiological parameters from Brauner et al. model",
 )
 
+argparser.add_argument("--different_seasonality", type=str, default="False")
+
+argparser.add_argument("--local_seasonality_sd", type=float, default=0.1)
+
 args = argparser.parse_args()
 
 if __name__ == "__main__":
@@ -125,8 +129,12 @@ if __name__ == "__main__":
             incubation_period={"mean": 1.53, "sd": 0.418, "dist": "gamma"},
         )
         # Generate directly from infection dists
-        ep.DPC = ep.generate_dist_vector({"mean": 10.9, "disp": 5.4, "dist": "negbiom"}, int(1e7), ep.cd_truncation)
-        ep.DPD = ep.generate_dist_vector({"mean": 21.8, "disp": 14.2, "dist": "negbiom"}, int(1e7), ep.dd_truncation)
+        ep.DPC = ep.generate_dist_vector(
+            {"mean": 10.9, "disp": 5.4, "dist": "negbiom"}, int(1e7), ep.cd_truncation
+        )
+        ep.DPD = ep.generate_dist_vector(
+            {"mean": 21.8, "disp": 14.2, "dist": "negbiom"}, int(1e7), ep.dd_truncation
+        )
         # Make sure these are not used further
         ep.onset_to_case_delay = None
         ep.onset_to_death_delay = None
@@ -169,6 +177,9 @@ if __name__ == "__main__":
     model_build_dict["r_walk_noise_scale_prior"] = args.r_walk_noise_scale_prior
     model_build_dict["basic_R_prior"] = basic_R_prior
     model_build_dict["max_R_day_prior"] = max_R_day_prior
+    assert args.different_seasonality in ["True", "False"]
+    model_build_dict["different_seasonality"] = args.different_seasonality == "True"
+    model_build_dict["local_seasonality_sd"] = args.local_seasonality_sd
 
     print("model_build_dict:", model_build_dict)
 
@@ -196,6 +207,8 @@ if __name__ == "__main__":
         "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
         "basic_R_prior": basic_R_prior,
         "max_R_day_prior": max_R_day_prior,
+        "different_seasonality": model_build_dict["different_seasonality"],
+        "local_seasonality_sd": model_build_dict["local_seasonality_sd"],
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()
