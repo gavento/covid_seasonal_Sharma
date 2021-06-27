@@ -1007,7 +1007,7 @@ def seasonality_model(
     else:
         raise Exception("Invalid seasonality_prior")
 
-    seasonality_beta1_bc = seasonality_beta1 * jnp.ones(data.nRs)
+    seasonality_beta1_bc = seasonality_beta1 * jnp.ones(data.nCs)
     if different_seasonality:
         seasonality_local_beta1 = numpyro.sample(
             "seasonality_local_beta1",
@@ -1018,10 +1018,11 @@ def seasonality_model(
             "seasonality_local_beta1", seasonality_beta1_bc
         )
 
+    seasonality_region_beta1 = seasonality_local_beta1 @ data.RC_mat.T
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
         1.0
-        + seasonality_local_beta1.reshape((data.nRs, 1))
+        + seasonality_region_beta1.reshape((data.nRs, 1))
         * jnp.cos(
             (data.Ds_day_of_year - seasonality_max_R_day).reshape((1, data.nDs))
             / 365.0
