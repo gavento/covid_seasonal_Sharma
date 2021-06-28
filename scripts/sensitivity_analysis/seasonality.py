@@ -121,6 +121,7 @@ if __name__ == "__main__":
 
     print("Loading Data")
     data = load_preprecess_data(config)
+    print(f"Countries: {data.unique_Cs}")
 
     print("Loading EpiParam")
     if args.brauner_params:
