@@ -14,10 +14,10 @@ For the seasonal variant of the model of [Brauner et al. *Inferring the effectiv
   * Runners and configs for sensitivity analyses
   * Fixes and updates
 
-* Preprint v2
+* Preprint v2 (tag [`preprint-v2`](https://github.com/gavento/covid_seasonal_Sharma/releases/tag/preprint-v2))
   * Added mobility sensitivity analysis, data and plotters
   * Rebased to updates in `MrinankSharma/COVID19NPISecondWave` commit [8884dc8](https://github.com/MrinankSharma/COVID19NPISecondWave/commit/8884dc8f9add0b7be6a3c1ee71944c632679f1e0).
-  * Added real data from `MrinankSharma/COVID19NPISecondWave`
+    * Now includes real-world data from `MrinankSharma/COVID19NPISecondWave`
 
 # Questions?
 
