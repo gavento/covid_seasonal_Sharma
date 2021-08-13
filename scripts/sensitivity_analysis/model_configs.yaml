@@ -1,12 +1,15 @@
 # default model config does not override anything
-default:
-  model_kwargs: {}
-  featurize_kwargs: {}
+#default:
+#  model_kwargs: {}
+#  featurize_kwargs: {}
+
+#####################
+## Main configuration
 
 modelSharma_dataSharma:
   data_config:
-    data_path: "d/modelSharma_dataSharma.csv"
-    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    data_path: "data/modelSharma_dataSharma.csv"
+    new_variant_path: "data/nuts3_new_variant_fraction.csv"
     preprocess_data_kwargs:
       start_date: "2020-08-01"
       end_date: "2021-01-22"
@@ -16,11 +19,15 @@ modelSharma_dataSharma:
     drop_npi_filter:
       - {"query": "Childcare Closed", "type": "equals"}
       - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
+
+##################################################
+## Main configuration with adjustment for mobility
+## (all features except parks)
 
 modelSharma_dataSharma_countryMobility1:
   data_config:
-    data_path: "d/modelSharma_dataSharma_countryMobility_RecreGrocTransWorkResid.csv"
-    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
+    data_path: "data/modelSharma_dataSharma_countryMobility_RecreGrocTransWorkResid.csv"
+    new_variant_path: "data/nuts3_new_variant_fraction.csv"
     preprocess_data_kwargs:
       start_date: "2020-08-01"
       end_date: "2021-01-22"
@@ -30,94 +37,3 @@ modelSharma_dataSharma_countryMobility1:
     drop_npi_filter:
       - {"query": "Childcare Closed", "type": "equals"}
       - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
-
-modelSharma_dataSharma_countryMobility2:
-  data_config:
-    data_path: "d/modelSharma_dataSharma_countryMobility_GrocTransWorkResid.csv"
-    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
-    preprocess_data_kwargs:
-      start_date: "2020-08-01"
-      end_date: "2021-01-22"
-    mask_from_date: "2021-01-09"
-  model_kwargs: {}
-  featurize_kwargs: 
-    drop_npi_filter:
-      - {"query": "Childcare Closed", "type": "equals"}
-      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
-
-modelSharma_dataSharma_countryMobility3:
-  data_config:
-    data_path: "d/modelSharma_dataSharma_countryMobility_GrocTransWork.csv"
-    new_variant_path: "d/modelSharma_dataSharma_nuts3_new_variant_fraction.csv"
-    preprocess_data_kwargs:
-      start_date: "2020-08-01"
-      end_date: "2021-01-22"
-    mask_from_date: "2021-01-09"
-  model_kwargs: {}
-  featurize_kwargs: 
-    drop_npi_filter:
-      - {"query": "Childcare Closed", "type": "equals"}
-      - {"query": "All Face-to-Face Businesses Closed", "type": "equals"}
-
-modelSharma_dataBraunerTE:
-  data_config:
-    data_path: "d/modelSharma_dataBraunerTE.csv"
-    new_variant_path: null
-    preprocess_data_kwargs:
-      start_date: "2020-01-22"
-      end_date: "2020-05-30"
-      household_feature_processing: "raw"
-      mask_cum_cases_under: 10
-      mask_cum_deaths_under: 100
-    mask_from_date: "2020-05-30"
-  model_kwargs: {}
-  featurize_kwargs: 
-    all_binary: True
-    drop_npi_filter:
-      - {"query": "Mask Wearing", "type": "equals"}
-      - {"query": "Travel Screen/Quarantine", "type": "equals"}
-      - {"query": "Travel Bans", "type": "equals"}
-      - {"query": "Public Transport Limited", "type": "equals"}
-      - {"query": "Internal Movement Limited", "type": "equals"}
-      - {"query": "Public Information Campaigns", "type": "equals"}
-      - {"query": "Symptomatic Testing", "type": "equals"}
-
-modelSharma_dataBrauner:
-  data_config:
-    data_path: "d/modelSharma_dataBrauner.csv"
-    new_variant_path: null
-    preprocess_data_kwargs:
-      start_date: "2020-01-22"
-      end_date: "2020-05-30"
-      household_feature_processing: "raw"
-      mask_cum_cases_under: 10
-      mask_cum_deaths_under: 100
-    mask_from_date: "2020-05-30"
-  model_kwargs: {}
-  featurize_kwargs: 
-    all_binary: True
-    drop_npi_filter:
-      - {"query": "Mask Wearing", "type": "equals"}
-      - {"query": "Travel Screen/Quarantine", "type": "equals"}
-      - {"query": "Travel Bans", "type": "equals"}
-      - {"query": "Public Transport Limited", "type": "equals"}
-      - {"query": "Internal Movement Limited", "type": "equals"}
-      - {"query": "Public Information Campaigns", "type": "equals"}
-      - {"query": "Symptomatic Testing", "type": "equals"}
-
-## Unused for now
-
-modelSharma_dataGavinCx:
-  data_config:
-    data_path: "data/Gavin_Cx-master_data_mob_exclude_us_True_m_w.csv"
-    new_variant_path: null
-    preprocess_data_kwargs:
-      start_date: "2020-05-01"
-      end_date: "2020-09-21"
-      household_feature_processing: "raw"
-      npi_start_col: 4
-    mask_from_date: "2020-09-21"
-  model_kwargs: {}
-  featurize_kwargs: 
-    all_binary: True
-    drop_npi_filter: []
