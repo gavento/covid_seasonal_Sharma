@@ -18,7 +18,7 @@ seasonality_ext_fourier:
 
 seasonality_ext_interactions:
   experiment_file: seasonality_ext.py
-  experiment_tag: seasonality_fourier
+  experiment_tag: seasonality_interactions
   args:
     interactions: True
 
