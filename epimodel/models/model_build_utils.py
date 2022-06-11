@@ -9,7 +9,7 @@ import numpyro.distributions as dist
 from epimodel.distributions import AsymmetricLaplace
 
 
-def sample_intervention_effects(nCMs, intervention_prior=None):
+def sample_intervention_effects(nCMs, intervention_prior=None, name="alpha_i"):
     """
     Sample interventions from some options
 
@@ -26,24 +26,24 @@ def sample_intervention_effects(nCMs, intervention_prior=None):
 
     if intervention_prior["type"] == "trunc_normal":
         alpha_i = numpyro.sample(
-            "alpha_i",
+            name,
             dist.TruncatedNormal(
                 low=-0.1, loc=jnp.zeros(nCMs), scale=intervention_prior["scale"]
             ),
         )
     elif intervention_prior["type"] == "half_normal":
         alpha_i = numpyro.sample(
-            "alpha_i",
+            name,
             dist.HalfNormal(scale=jnp.ones(nCMs) * intervention_prior["scale"]),
         )
     elif intervention_prior["type"] == "normal":
         alpha_i = numpyro.sample(
-            "alpha_i",
+            name,
             dist.Normal(loc=jnp.zeros(nCMs), scale=intervention_prior["scale"]),
         )
     elif intervention_prior["type"] == "asymmetric_laplace":
         alpha_i = numpyro.sample(
-            "alpha_i",
+            name,
             AsymmetricLaplace(
                 asymmetry=intervention_prior["asymmetry"],
                 scale=jnp.ones(nCMs) * intervention_prior["scale"],

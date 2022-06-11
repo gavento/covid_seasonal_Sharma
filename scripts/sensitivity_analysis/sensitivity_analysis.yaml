@@ -3,7 +3,25 @@ default:
   experiment_tag: default
   args: {}
 
-  
+
+### Seasonality - fourier sensitivity
+
+seasonality_ext_fourier:
+  experiment_file: seasonality_ext.py
+  experiment_tag: seasonality_fourier
+  args:
+    fourier_degree:
+      - 1
+      - 2
+      - 3
+      - 4
+
+seasonality_ext_interactions:
+  experiment_file: seasonality_ext.py
+  experiment_tag: seasonality_fourier
+  args:
+    interactions: True
+
 ### Seasonality - Sharma data
 
 seasonality_basic_R_normal_Sharma:
