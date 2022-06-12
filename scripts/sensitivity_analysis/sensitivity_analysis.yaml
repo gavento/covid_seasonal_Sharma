@@ -20,7 +20,9 @@ seasonality_ext_interactions:
   experiment_file: seasonality_ext.py
   experiment_tag: seasonality_interactions
   args:
-    interactions: True
+    interactions:
+      - "with_seasonal"
+      - "with_full"
 
 ### Seasonality - Sharma data
 

@@ -339,12 +339,29 @@ def seasonality_interactions_model(
         ),
     )
 
+    seasonality_multiplier_full = numpyro.deterministic(
+        "seasonality_multiplier_full",
+        1.0
+        + jnp.cos(
+            (data.Ds_day_of_year - seasonality_max_R_day).reshape((1, data.nDs))
+            / 365.0
+            * 2.0
+            * jnp.pi
+        ),
+    )
+
     # Interaction weights - sample with the same prior
     alpha_int_i = sample_intervention_effects(data.nCMs, intervention_prior, name="alpha_int_i")
     # transmission reduction from interactions
     assert seasonality_multiplier.shape == (data.nRs, data.nDs)
+    assert seasonality_multiplier_full.shape == (1, data.nDs)
     assert data.active_cms.shape == (data.nRs, data.nCMs, data.nDs)
-    cm_reduction_int = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier.reshape(data.nRs, 1, data.nDs), axis=1)
+    if interactions == "with_full":
+        print("Interactions with full 0..2 cosine wave")
+        cm_reduction_int = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier_full.reshape(1, 1, data.nDs), axis=1)
+    else:
+        print("Interactions with seasonality-amplitude cosine wave")
+        cm_reduction_int = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier.reshape(data.nRs, 1, data.nDs), axis=1)
 
     # rescaling variables by 10 for better NUTS adaptation
     r_walk_noise = numpyro.sample(
