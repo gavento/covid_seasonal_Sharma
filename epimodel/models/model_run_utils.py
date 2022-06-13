@@ -108,9 +108,12 @@ def run_model(
     ).tolist()
     info_dict["warmup"]["inverse_mass_matrix"] = {}
 
+    print(mcmc.get_extra_fields()["adapt_state"].inverse_mass_matrix)
+    print(repr(mcmc.get_extra_fields()["adapt_state"].inverse_mass_matrix))
+
     all_mass_mats = jnp.array(
         jnp.array_split(
-            mcmc.get_extra_fields()["adapt_state"].inverse_mass_matrix,
+            list(mcmc.get_extra_fields()["adapt_state"].inverse_mass_matrix.values())[0],
             num_chains,
             axis=0,
         )
