@@ -5,11 +5,10 @@ import jax
 import jax.numpy as jnp
 import numpyro
 import numpyro.distributions as dist
-
 from epimodel.distributions import AsymmetricLaplace
 
 
-def sample_intervention_effects(nCMs, intervention_prior=None, name="alpha_i"):
+def sample_intervention_effects(nCMs, intervention_prior=None):
     """
     Sample interventions from some options
 
@@ -26,24 +25,24 @@ def sample_intervention_effects(nCMs, intervention_prior=None, name="alpha_i"):
 
     if intervention_prior["type"] == "trunc_normal":
         alpha_i = numpyro.sample(
-            name,
+            "alpha_i",
             dist.TruncatedNormal(
                 low=-0.1, loc=jnp.zeros(nCMs), scale=intervention_prior["scale"]
             ),
         )
     elif intervention_prior["type"] == "half_normal":
         alpha_i = numpyro.sample(
-            name,
+            "alpha_i",
             dist.HalfNormal(scale=jnp.ones(nCMs) * intervention_prior["scale"]),
         )
     elif intervention_prior["type"] == "normal":
         alpha_i = numpyro.sample(
-            name,
+            "alpha_i",
             dist.Normal(loc=jnp.zeros(nCMs), scale=intervention_prior["scale"]),
         )
     elif intervention_prior["type"] == "asymmetric_laplace":
         alpha_i = numpyro.sample(
-            name,
+            "alpha_i",
             AsymmetricLaplace(
                 asymmetry=intervention_prior["asymmetry"],
                 scale=jnp.ones(nCMs) * intervention_prior["scale"],
@@ -119,11 +118,7 @@ def seed_infections(seeding_scale, nRs, nDs, seeding_padding, total_padding):
     total_infections_placeholder = jnp.zeros((nRs, seeding_padding + nDs))
     seeding = numpyro.sample("seeding", dist.LogNormal(jnp.zeros((nRs, 1)), 1.0))
     init_infections = jnp.zeros((nRs, total_padding))
-    init_infections = jax.ops.index_add(
-        init_infections,
-        jax.ops.index[:, -seeding_padding:],
-        jnp.repeat(seeding ** seeding_scale, seeding_padding, axis=-1),
-    )
+    init_infections = init_infections.at[:, -seeding_padding:].add(jnp.repeat(seeding ** seeding_scale, seeding_padding, axis=-1))
     return init_infections, total_infections_placeholder
 
 
@@ -173,12 +168,8 @@ def get_discrete_renewal_transition(ep, type="noiseless"):
         def discrete_renewal_transition(infections, R):
             new_infections_t = jnp.multiply(R, infections @ ep.GI_flat_rev)
             new_infections = infections
-            new_infections = jax.ops.index_update(
-                new_infections, jax.ops.index[:, :-1], infections[:, 1:]
-            )
-            new_infections = jax.ops.index_update(
-                new_infections, jax.ops.index[:, -1], new_infections_t
-            )
+            new_infections = new_infections.at[:, :-1].set(infections[:, 1:])
+            new_infections = new_infections.at[:, -1].set(new_infections_t)
             return new_infections, new_infections_t
 
     else:

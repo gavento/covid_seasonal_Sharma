@@ -4,10 +4,11 @@ Extra models - interactions and higher-order seasonality
 import jax.scipy.signal
 import jax.numpy as jnp
 import jax
+import numpyro
 
 from epimodel.models.model_build_utils import *
 
-
+@numpyro.handlers.reparam(config={"seasonality_phases_tail": numpyro.infer.reparam.CircularReparam()})
 def seasonality_fourier_model(
     data,
     ep,
@@ -67,9 +68,26 @@ def seasonality_fourier_model(
         "r_walk_noise_scale", dist.HalfNormal(scale=r_walk_noise_scale_prior)
     )
 
-    seasonality_max_R_day_w = numpyro.sample("seasonality_max_R_day_w",dist.Normal(jnp.zeros(fourier_degree), 1000.0))
-    # wrapped-around value
-    seasonality_max_R_day = numpyro.deterministic("seasonality_max_R_day",jnp.mod(seasonality_max_R_day_w, periods))
+    if max_R_day_prior["type"] == "normal":
+        seasonality_max_R_day = numpyro.sample(
+            "seasonality_max_R_day",
+            dist.Normal(max_R_day_prior["mean"], max_R_day_prior["scale"]),
+        )
+    elif max_R_day_prior["type"] == "fixed":
+        seasonality_max_R_day = numpyro.deterministic(
+            "seasonality_max_R_day",
+            jnp.array(max_R_day_prior["value"], dtype=jnp.float32),
+        )
+    else:
+        raise Exception(f"Invalid max_R_day_prior")
+
+    seasonality_phases_tail = numpyro.sample(
+        "seasonality_phases_tail",
+        dist.VonMises(jnp.zeros(fourier_degree - 1), 10.0))
+    seasonality_max_R_day_vec = numpyro.deterministic(
+        "seasonality_max_R_day_vec",
+        jnp.concatenate(jnp.array([seasonality_max_R_day]), seasonality_phases_tail / 2 / jnp.pi * periods[1:])
+    )
 
     seasonality_beta1 = numpyro.sample(
         "seasonality_beta1", dist.Uniform(jnp.zeros(fourier_degree), 0.95)
@@ -80,7 +98,7 @@ def seasonality_fourier_model(
         1.0
         + jnp.sum(seasonality_beta1
         * jnp.cos(
-            (data.Ds_day_of_year.reshape((-1, 1)) - seasonality_max_R_day_w.reshape((1, fourier_degree)))
+            (data.Ds_day_of_year.reshape((-1, 1)) - seasonality_max_R_day_vec.reshape((1, fourier_degree)))
             / periods
             * 2.0
             * jnp.pi
@@ -358,10 +376,10 @@ def seasonality_interactions_model(
     assert data.active_cms.shape == (data.nRs, data.nCMs, data.nDs)
     if interactions == "with_full":
         print("Interactions with full 0..2 cosine wave")
-        cm_reduction_int = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier_full.reshape(1, 1, data.nDs), axis=1)
+        cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier_full.reshape(1, 1, data.nDs), axis=1)
     else:
         print("Interactions with seasonality-amplitude cosine wave")
-        cm_reduction_int = jnp.sum(data.active_cms * alpha_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier.reshape(data.nRs, 1, data.nDs), axis=1)
+        cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier.reshape(data.nRs, 1, data.nDs), axis=1)
 
     # rescaling variables by 10 for better NUTS adaptation
     r_walk_noise = numpyro.sample(

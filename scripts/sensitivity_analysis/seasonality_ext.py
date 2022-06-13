@@ -211,9 +211,9 @@ if __name__ == "__main__":
     info_dict["exp_config"] = {
         "r_walk_noise_scale_prior": args.r_walk_noise_scale_prior,
         "basic_R_prior": basic_R_prior,
-        "max_R_day_prior": max_R_day_prior,
-        "different_seasonality": model_build_dict["different_seasonality"],
-        "local_seasonality_sd": model_build_dict["local_seasonality_sd"],
+        "max_R_day_prior": model_build_dict.get("max_R_day_prior"),
+        "different_seasonality": model_build_dict.get("different_seasonality"),
+        "local_seasonality_sd": model_build_dict.get("local_seasonality_sd"),
     }
     info_dict["cm_names"] = data.CMs
     info_dict["data_path"] = get_data_path()
