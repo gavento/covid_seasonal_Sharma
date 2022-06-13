@@ -68,26 +68,19 @@ def seasonality_fourier_model(
         "r_walk_noise_scale", dist.HalfNormal(scale=r_walk_noise_scale_prior)
     )
 
-    if max_R_day_prior["type"] == "normal":
-        seasonality_max_R_day = numpyro.sample(
-            "seasonality_max_R_day",
-            dist.Normal(max_R_day_prior["mean"], max_R_day_prior["scale"]),
-        )
-    elif max_R_day_prior["type"] == "fixed":
-        seasonality_max_R_day = numpyro.deterministic(
-            "seasonality_max_R_day",
-            jnp.array(max_R_day_prior["value"], dtype=jnp.float32),
+    if fourier_degree > 1:
+        seasonality_phases_tail = numpyro.sample(
+            "seasonality_phases_tail",
+            dist.VonMises(jnp.zeros(fourier_degree - 1), 10.0))
+        seasonality_max_R_day_vec = numpyro.deterministic(
+            "seasonality_max_R_day_vec",
+            jnp.concatenate([jnp.array([1.0]), seasonality_phases_tail / 2 / jnp.pi * periods[1:]])
         )
     else:
-        raise Exception(f"Invalid max_R_day_prior")
-
-    seasonality_phases_tail = numpyro.sample(
-        "seasonality_phases_tail",
-        dist.VonMises(jnp.zeros(fourier_degree - 1), 10.0))
-    seasonality_max_R_day_vec = numpyro.deterministic(
-        "seasonality_max_R_day_vec",
-        jnp.concatenate(jnp.array([seasonality_max_R_day]), seasonality_phases_tail / 2 / jnp.pi * periods[1:])
-    )
+        seasonality_max_R_day_vec = numpyro.deterministic(
+            "seasonality_max_R_day_vec",
+            jnp.array([1.0])
+        )
 
     seasonality_beta1 = numpyro.sample(
         "seasonality_beta1", dist.Uniform(jnp.zeros(fourier_degree), 0.95)
@@ -119,9 +112,7 @@ def seasonality_fourier_model(
     )[: data.nRs, : (data.nDs - 2 * r_walk_period)]
     # except that we assume no noise for the first 3 weeks
     full_log_Rt_noise = jnp.zeros((data.nRs, data.nDs))
-    full_log_Rt_noise = jax.ops.index_update(
-        full_log_Rt_noise, jax.ops.index[:, 2 * r_walk_period :], expanded_r_walk_noise
-    )
+    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(expanded_r_walk_noise)
 
     # NB: basic_R is R0(t=0) INCLUDING seasonality effect (for comparability with non-seasonal model),
     # so we need to divide by the initial seasonality first
@@ -176,16 +167,10 @@ def seasonality_fourier_model(
         infections + (infection_noise_scale * (10.0 * infection_noise.T))
     )
 
-    total_infections = jax.ops.index_update(
-        total_infections_placeholder,
-        jax.ops.index[:, :seeding_padding],
-        init_infections[:, -seeding_padding:],
-    )
+    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(init_infections[:, -seeding_padding:])
     total_infections = numpyro.deterministic(
         "total_infections",
-        jax.ops.index_update(
-            total_infections, jax.ops.index[:, seeding_padding:], infections.T
-        ),
+        total_infections.at[:, seeding_padding:].set(infections.T),
     )
 
     # Time constant case fatality rate (ascertainment rate assumed to be 1
@@ -252,6 +237,7 @@ def seasonality_fourier_model(
             obs=data.new_deaths.data,
         )
 
+seasonality_fourier_model.__name__ = "seasonality_fourier_model"
 
 
 def seasonality_interactions_model(
@@ -270,6 +256,7 @@ def seasonality_interactions_model(
     different_seasonality=False,
     local_seasonality_sd=0.1,
     interactions=None,
+    interactions_sd=1.0,
     **kwargs,
 ):
     """
@@ -368,14 +355,16 @@ def seasonality_interactions_model(
         ),
     )
 
-    # Interaction weights - sample with the same prior
-    alpha_int_i = sample_intervention_effects(data.nCMs, intervention_prior, name="alpha_int_i")
+    # Interaction weights - sample with the same prior or as normals
+    #alpha_int_i = sample_intervention_effects(data.nCMs, intervention_prior, name="alpha_int_i")
+    alpha_int_i = numpyro.sample("alpha_int_i", dist.Normal(jnp.zeros(data.nCMs), interactions_sd))
+
     # transmission reduction from interactions
     assert seasonality_multiplier.shape == (data.nRs, data.nDs)
     assert seasonality_multiplier_full.shape == (1, data.nDs)
     assert data.active_cms.shape == (data.nRs, data.nCMs, data.nDs)
     if interactions == "with_full":
-        print("Interactions with full 0..2 cosine wave")
+        print("Interactions with full-amplittude (0..2) cosine wave")
         cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier_full.reshape(1, 1, data.nDs), axis=1)
     else:
         print("Interactions with seasonality-amplitude cosine wave")
@@ -395,9 +384,7 @@ def seasonality_interactions_model(
     )[: data.nRs, : (data.nDs - 2 * r_walk_period)]
     # except that we assume no noise for the first 3 weeks
     full_log_Rt_noise = jnp.zeros((data.nRs, data.nDs))
-    full_log_Rt_noise = jax.ops.index_update(
-        full_log_Rt_noise, jax.ops.index[:, 2 * r_walk_period :], expanded_r_walk_noise
-    )
+    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(expanded_r_walk_noise)
 
     # NB: basic_R is R0(t=0) INCLUDING seasonality effect (for comparability with non-seasonal model),
     # so we need to divide by the initial seasonality first
@@ -452,16 +439,11 @@ def seasonality_interactions_model(
         infections + (infection_noise_scale * (10.0 * infection_noise.T))
     )
 
-    total_infections = jax.ops.index_update(
-        total_infections_placeholder,
-        jax.ops.index[:, :seeding_padding],
-        init_infections[:, -seeding_padding:],
-    )
+
+    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(init_infections[:, -seeding_padding:])
     total_infections = numpyro.deterministic(
         "total_infections",
-        jax.ops.index_update(
-            total_infections, jax.ops.index[:, seeding_padding:], infections.T
-        ),
+        total_infections.at[:, seeding_padding:].set(infections.T),
     )
 
     # Time constant case fatality rate (ascertainment rate assumed to be 1
