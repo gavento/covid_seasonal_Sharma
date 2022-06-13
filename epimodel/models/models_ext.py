@@ -71,7 +71,7 @@ def seasonality_fourier_model(
     if fourier_degree > 1:
         seasonality_phases_tail = numpyro.sample(
             "seasonality_phases_tail",
-            dist.VonMises(jnp.zeros(fourier_degree - 1), 10.0))
+            dist.VonMises(jnp.zeros(fourier_degree - 1), 0.001)) # Uninformaive prior
         seasonality_max_R_day_vec = numpyro.deterministic(
             "seasonality_max_R_day_vec",
             jnp.concatenate([jnp.array([1.0]), seasonality_phases_tail / 2 / jnp.pi * periods[1:]])
