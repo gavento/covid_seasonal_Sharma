@@ -226,7 +226,7 @@ def run_model(
                 )
                 print("OK")
             except Exception as e:
-                print(e)
+                print(f"Failed: {e!r}")
                 posterior_predictive = None
         else:
             posterior_predictive = None
@@ -238,7 +238,7 @@ def run_model(
                 )
                 print("OK")
             except Exception as e:
-                print(e)
+                print(f"Failed: {e!r}")
                 prior = None
         else:
             prior = None
