@@ -61,11 +61,11 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pytest"]
 
 [[package]]
 name = "arviz"
-version = "0.11.2"
+version = "0.12.0"
 description = "Exploratory analysis of Bayesian models"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
 matplotlib = ">=3.0"
@@ -74,11 +74,11 @@ numpy = ">=1.12"
 packaging = "*"
 pandas = ">=0.23"
 scipy = ">=0.19"
-typing-extensions = ">=3.7.4.3,<4"
+typing-extensions = ">=3.7.4.3"
 xarray = ">=0.16.1"
 
 [package.extras]
-all = ["numba", "bokeh (>=1.4.0)", "ujson", "dask", "zarr (>=2.5.0)"]
+all = ["numba", "bokeh (>=1.4.0,<3.0)", "ujson", "dask", "zarr (>=2.5.0)"]
 
 [[package]]
 name = "async-generator"
@@ -1407,8 +1407,8 @@ argon2-cffi = [
     {file = "argon2_cffi-20.1.0-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:36320372133a003374ef4275fbfce78b7ab581440dfca9f9471be3dd9a522428"},
 ]
 arviz = [
-    {file = "arviz-0.11.2-py3-none-any.whl", hash = "sha256:f6a1389a90b53335f248d282c8142b8209150b9625459a85ec6d3d38786797c1"},
-    {file = "arviz-0.11.2.tar.gz", hash = "sha256:a9d0eb32e84a0472aa78a488ba9b12b05e7be8c2c8fb34a1ba6286cc1254ee0d"},
+    {file = "arviz-0.12.0-py3-none-any.whl", hash = "sha256:08ef308a90ddbe52332ef90aeffa367ea080960ada4104a88716cc234dbcee1f"},
+    {file = "arviz-0.12.0.tar.gz", hash = "sha256:3684b19cc7cfdd18c4c0d2e273500309f290e00b0e7174864f4388a8c17701df"},
 ]
 async-generator = [
     {file = "async_generator-1.10-py3-none-any.whl", hash = "sha256:01c7bf666359b4967d2cda0000cc2e4af16a0ae098cbffcb8472fb9e8ad6585b"},

@@ -8,7 +8,15 @@ import numpyro
 
 from epimodel.models.model_build_utils import *
 
+
 @numpyro.handlers.reparam(config={"seasonality_phases_tail": numpyro.infer.reparam.CircularReparam()})
+def phase_prior(size):
+    assert size > 0
+    return numpyro.sample(
+        "seasonality_phases_tail",
+        dist.VonMises(jnp.zeros(size), 0.001)) # Uninformaive prior
+
+
 def seasonality_fourier_model(
     data,
     ep,
@@ -69,9 +77,7 @@ def seasonality_fourier_model(
     )
 
     if fourier_degree > 1:
-        seasonality_phases_tail = numpyro.sample(
-            "seasonality_phases_tail",
-            dist.VonMises(jnp.zeros(fourier_degree - 1), 0.001)) # Uninformaive prior
+        seasonality_phases_tail = phase_prior(fourier_degree - 1)
         seasonality_max_R_day_vec = numpyro.deterministic(
             "seasonality_max_R_day_vec",
             jnp.concatenate([jnp.array([1.0]), seasonality_phases_tail / 2 / jnp.pi * periods[1:]])
@@ -81,6 +87,7 @@ def seasonality_fourier_model(
             "seasonality_max_R_day_vec",
             jnp.array([1.0])
         )
+    assert seasonality_max_R_day_vec.shape == (fourier_degree,)
 
     seasonality_beta1 = numpyro.sample(
         "seasonality_beta1", dist.Uniform(jnp.zeros(fourier_degree), 0.95)
