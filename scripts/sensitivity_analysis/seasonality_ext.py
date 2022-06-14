@@ -201,6 +201,7 @@ if __name__ == "__main__":
         save_results=True,
         output_fname=full_output,
         chain_method="parallel",
+        sample_prior=(args.fourier_degree is None),
     )
 
     info_dict["model_config_name"] = args.model_config

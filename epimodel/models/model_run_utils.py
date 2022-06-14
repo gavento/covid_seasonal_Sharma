@@ -27,6 +27,8 @@ def run_model(
     save_json=False,
     chain_method="parallel",
     heuristic_step_size=True,
+    sample_prior=True,
+    sample_posterior=True,
 ):
     """
     Model run utility
@@ -215,22 +217,30 @@ def run_model(
     if save_results:
         print("Saving .netcdf")
         try:
-            try:
-                print("  computing posterior_samples ... ", end='')
-                posterior_samples = mcmc.get_samples()
-                posterior_predictive = Predictive(model_func, posterior_samples)(
-                    PRNGKey(1), data, ep, **model_kwargs
-                )
-                print("OK")
-            except:
+            if sample_posterior:
+                try:
+                    print("  computing posterior_samples ... ", end='')
+                    posterior_samples = mcmc.get_samples()
+                    posterior_predictive = Predictive(model_func, posterior_samples)(
+                        PRNGKey(1), data, ep, **model_kwargs
+                    )
+                    print("OK")
+                except Exception as e:
+                    print(e)
+                    posterior_predictive = None
+            else:
                 posterior_predictive = None
-            try:
-                print("  computing prior samples ... ", end='')
-                prior = Predictive(model_func, num_samples=500)(
-                    PRNGKey(2), data, ep, **model_kwargs
-                )
-                print("OK")
-            except:
+            if sample_prior:
+                try:
+                    print("  computing prior samples ... ", end='')
+                    prior = Predictive(model_func, num_samples=500)(
+                        PRNGKey(2), data, ep, **model_kwargs
+                    )
+                    print("OK")
+                except Exception as e:
+                    print(e)
+                    prior = None
+            else:
                 prior = None
 
             inf_data = az.from_numpyro(
@@ -242,7 +252,9 @@ def run_model(
             if output_fname is None:
                 output_fname = f'{model_func.__name__}-{datetime.now(tz=None).strftime("%y-%m-%d_%H-%M-%S")}.netcdf'
 
+            print(f"Saving to {output_fname} ... ", end='')
             az.to_netcdf(inf_data, output_fname)
+            print("OK")
 
             json_fname = output_fname.replace(".netcdf", ".json")
             if save_json:
