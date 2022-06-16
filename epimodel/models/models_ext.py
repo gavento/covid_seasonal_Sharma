@@ -84,11 +84,12 @@ def seasonality_fourier_model(
     seasonality_beta1 = numpyro.sample(
         "seasonality_beta1", dist.Uniform(jnp.zeros(fourier_degree), 0.95)
     )
+    assert seasonality_beta1.shape == (fourier_degree,)
 
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
         1.0
-        + jnp.sum(seasonality_beta1
+        + jnp.sum(seasonality_beta1.reshape((1, fourier_degree))
         * jnp.cos(
             (data.Ds_day_of_year.reshape((-1, 1)) - seasonality_max_R_day_vec.reshape((1, fourier_degree)))
             / periods
@@ -371,11 +372,12 @@ def seasonality_interactions_model(
     assert seasonality_multiplier_full.shape == (1, data.nDs)
     assert data.active_cms.shape == (data.nRs, data.nCMs, data.nDs)
     if interactions == "with_full":
-        print("Interactions with full-amplittude (0..2) cosine wave")
-        cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier_full.reshape(1, 1, data.nDs), axis=1)
+        #print("Interactions with full-amplittude (0..2) cosine wave")
+        seasonal_multiplier_ = seasonality_multiplier_full.reshape(1, 1, data.nDs)
     else:
-        print("Interactions with seasonality-amplitude cosine wave")
-        cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * seasonality_multiplier.reshape(data.nRs, 1, data.nDs), axis=1)
+        #print("Interactions with seasonality-amplitude cosine wave")
+        seasonal_multiplier_ = seasonality_multiplier.reshape(data.nRs, 1, data.nDs)
+    cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * jnp.log(seasonal_multiplier_), axis=1)
 
     # rescaling variables by 10 for better NUTS adaptation
     r_walk_noise = numpyro.sample(
