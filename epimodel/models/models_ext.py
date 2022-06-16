@@ -1,6 +1,7 @@
 """
 Extra models - interactions and higher-order seasonality
 """
+from math import atan2, hypot
 import jax.scipy.signal
 import jax.numpy as jnp
 import jax
@@ -8,13 +9,30 @@ import numpyro
 
 from epimodel.models.model_build_utils import *
 
+def sample_fourier_phases_amplitudes(name, fourier_degree, scale=1.0):
+    assert fourier_degree >= 1
+    xys = numpyro.sample(f"{name}_xy0_", dist.Normal(jnp.zeors((fourier_degree, 2), scale)))
+    xys = xys.at[0, 1].set(0.0)
+    _phase = numpyro.numpyro.deterministic(f"{name}_phase", jnp.atan2(xys[:,1], xys[:,0]))
+    _amplitude = numpyro.numpyro.deterministic(f"{name}_amplitude", jnp.hypot(xys[:,0], xys[:,1]))
+    return xys
 
-@numpyro.handlers.reparam(config={"seasonality_phases_tail": numpyro.infer.reparam.CircularReparam()})
-def phase_prior(size):
-    assert size > 0
-    return numpyro.sample(
-        "seasonality_phases_tail",
-        dist.VonMises(jnp.zeros(size), 0.001)) # Uninformaive prior
+
+def days_to_amplitude(days_of_year, seasonality_xys):
+    assert len(days_of_year.shape) == 1
+    degree = seasonality_xys.shape[0]
+    assert seasonality_xys.shape == (degree, 2)
+
+    periods=[365.0,]
+    for i in range(degree - 1):
+        periods.append(periods[-1] / 2.0)
+    periods=jnp.array(periods)
+
+    days_phase = days_of_year.reshape((-1, 1)) / periods.reshape((1, -1))
+    days_xys = jnp.stack([jnp.cos(days_phase), jnp.sin(days_phase)], axis=2)
+    days_amplitude = jnp.sum(seasonality_xys.reshape(1, degree, 2) * days_xys, axis=(1,2))
+    assert days_amplitude.shape == days_of_year.shape
+    return days_amplitude
 
 
 def seasonality_fourier_model(
@@ -49,13 +67,6 @@ def seasonality_fourier_model(
     for k in kwargs.keys():
         print(f"{k} is not being used")
 
-    assert fourier_degree >= 1
-    periods=[365.0,]
-    for i in range(fourier_degree - 1):
-        periods.append(periods[-1] / 2.0)
-    periods=jnp.array(periods)
-    assert periods.shape == (fourier_degree, )
-
     # First, compute R.
     # sample intervention effects from their priors.
     # mean intervention effects
@@ -68,35 +79,12 @@ def seasonality_fourier_model(
     # Therefore it is comparable to basic_R without seasonality
     basic_R = sample_basic_R(data.nRs, basic_R_prior)
 
-    if fourier_degree > 1:
-        seasonality_phases_tail = phase_prior(fourier_degree - 1)
-        seasonality_max_R_day_vec = numpyro.deterministic(
-            "seasonality_max_R_day_vec",
-            jnp.concatenate([jnp.array([1.0]), seasonality_phases_tail / 2 / jnp.pi * periods[1:]])
-        )
-    else:
-        seasonality_max_R_day_vec = numpyro.deterministic(
-            "seasonality_max_R_day_vec",
-            jnp.array([1.0])
-        )
-    assert seasonality_max_R_day_vec.shape == (fourier_degree,)
-
-    seasonality_beta1 = numpyro.sample(
-        "seasonality_beta1", dist.Uniform(jnp.zeros(fourier_degree), 0.95)
-    )
-    assert seasonality_beta1.shape == (fourier_degree,)
-
-    seasonality_multiplier = numpyro.deterministic(
-        "seasonality_multiplier",
-        1.0
-        + jnp.sum(seasonality_beta1.reshape((1, fourier_degree))
-        * jnp.cos(
-            (data.Ds_day_of_year.reshape((-1, 1)) - seasonality_max_R_day_vec.reshape((1, fourier_degree)))
-            / periods
-            * 2.0
-            * jnp.pi
-        ), axis=1),
-    ).reshape((1, -1))
+    seasonality_xys = sample_fourier_phases_amplitudes("seasonality", fourier_degree, scale=1.0)
+    assert seasonality_xys.shape == (fourier_degree, 2)
+    seasonality_beta1 = numpyro.deterministic("seasonality_beta1", seasonality_xys[0, 0])
+    _ = numpyro.deterministic("seasonality_year", 1 + days_to_amplitude(jnp.arange(0.0, 365)), seasonality_xys)
+    seasonality_multiplier = numpyro.deterministic("seasonality_multiplier",
+        1 + days_to_amplitude(data.Ds_day_of_year), seasonality_xys).reshape((1, -1))
 
     # number of 'noise points'
     # -1 since no change for the first 2 weeks.
