@@ -9,12 +9,19 @@ import numpyro
 
 from epimodel.models.model_build_utils import *
 
+
 def sample_fourier_phases_amplitudes(name, fourier_degree, scale=1.0):
     assert fourier_degree >= 1
-    xys = numpyro.sample(f"{name}_xy0_", dist.Normal(jnp.zeors((fourier_degree, 2), scale)))
+    xys = numpyro.sample(
+        f"{name}_xy0_", dist.Normal(jnp.zeors((fourier_degree, 2), scale))
+    )
     xys = xys.at[0, 1].set(0.0)
-    _phase = numpyro.numpyro.deterministic(f"{name}_phase", jnp.atan2(xys[:,1], xys[:,0]))
-    _amplitude = numpyro.numpyro.deterministic(f"{name}_amplitude", jnp.hypot(xys[:,0], xys[:,1]))
+    _phase = numpyro.numpyro.deterministic(
+        f"{name}_phase", jnp.atan2(xys[:, 1], xys[:, 0])
+    )
+    _amplitude = numpyro.numpyro.deterministic(
+        f"{name}_amplitude", jnp.hypot(xys[:, 0], xys[:, 1])
+    )
     return xys
 
 
@@ -23,14 +30,18 @@ def days_to_amplitude(days_of_year, seasonality_xys):
     degree = seasonality_xys.shape[0]
     assert seasonality_xys.shape == (degree, 2)
 
-    periods=[365.0,]
+    periods = [
+        365.0,
+    ]
     for i in range(degree - 1):
         periods.append(periods[-1] / 2.0)
-    periods=jnp.array(periods)
+    periods = jnp.array(periods)
 
     days_phase = days_of_year.reshape((-1, 1)) / periods.reshape((1, -1))
     days_xys = jnp.stack([jnp.cos(days_phase), jnp.sin(days_phase)], axis=2)
-    days_amplitude = jnp.sum(seasonality_xys.reshape(1, degree, 2) * days_xys, axis=(1,2))
+    days_amplitude = jnp.sum(
+        seasonality_xys.reshape(1, degree, 2) * days_xys, axis=(1, 2)
+    )
     assert days_amplitude.shape == days_of_year.shape
     return days_amplitude
 
@@ -79,12 +90,21 @@ def seasonality_fourier_model(
     # Therefore it is comparable to basic_R without seasonality
     basic_R = sample_basic_R(data.nRs, basic_R_prior)
 
-    seasonality_xys = sample_fourier_phases_amplitudes("seasonality", fourier_degree, scale=1.0)
+    seasonality_xys = sample_fourier_phases_amplitudes(
+        "seasonality", fourier_degree, scale=1.0
+    )
     assert seasonality_xys.shape == (fourier_degree, 2)
-    seasonality_beta1 = numpyro.deterministic("seasonality_beta1", seasonality_xys[0, 0])
-    _ = numpyro.deterministic("seasonality_year", 1 + days_to_amplitude(jnp.arange(0.0, 365)), seasonality_xys)
-    seasonality_multiplier = numpyro.deterministic("seasonality_multiplier",
-        1 + days_to_amplitude(data.Ds_day_of_year), seasonality_xys).reshape((1, -1))
+    seasonality_beta1 = numpyro.deterministic(
+        "seasonality_beta1", seasonality_xys[0, 0]
+    )
+    _ = numpyro.deterministic(
+        "seasonality_year", 1 + days_to_amplitude(jnp.arange(0.0, 365)), seasonality_xys
+    )
+    seasonality_multiplier = numpyro.deterministic(
+        "seasonality_multiplier",
+        1 + days_to_amplitude(data.Ds_day_of_year),
+        seasonality_xys,
+    ).reshape((1, -1))
 
     # number of 'noise points'
     # -1 since no change for the first 2 weeks.
@@ -108,7 +128,9 @@ def seasonality_fourier_model(
     )[: data.nRs, : (data.nDs - 2 * r_walk_period)]
     # except that we assume no noise for the first 3 weeks
     full_log_Rt_noise = jnp.zeros((data.nRs, data.nDs))
-    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(expanded_r_walk_noise)
+    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(
+        expanded_r_walk_noise
+    )
 
     # NB: basic_R is R0(t=0) INCLUDING seasonality effect (for comparability with non-seasonal model),
     # so we need to divide by the initial seasonality first
@@ -163,7 +185,9 @@ def seasonality_fourier_model(
         infections + (infection_noise_scale * (10.0 * infection_noise.T))
     )
 
-    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(init_infections[:, -seeding_padding:])
+    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(
+        init_infections[:, -seeding_padding:]
+    )
     total_infections = numpyro.deterministic(
         "total_infections",
         total_infections.at[:, seeding_padding:].set(infections.T),
@@ -232,6 +256,7 @@ def seasonality_fourier_model(
             ),
             obs=data.new_deaths.data,
         )
+
 
 seasonality_fourier_model.__name__ = "seasonality_fourier_model"
 
@@ -352,20 +377,27 @@ def seasonality_interactions_model(
     )
 
     # Interaction weights - sample with the same prior or as normals
-    #alpha_int_i = sample_intervention_effects(data.nCMs, intervention_prior, name="alpha_int_i")
-    alpha_int_i = numpyro.sample("alpha_int_i", dist.Normal(jnp.zeros(data.nCMs), interactions_sd))
+    # alpha_int_i = sample_intervention_effects(data.nCMs, intervention_prior, name="alpha_int_i")
+    alpha_int_i = numpyro.sample(
+        "alpha_int_i", dist.Normal(jnp.zeros(data.nCMs), interactions_sd)
+    )
 
     # transmission reduction from interactions
     assert seasonality_multiplier.shape == (data.nRs, data.nDs)
     assert seasonality_multiplier_full.shape == (1, data.nDs)
     assert data.active_cms.shape == (data.nRs, data.nCMs, data.nDs)
     if interactions == "with_full":
-        #print("Interactions with full-amplittude (0..2) cosine wave")
+        # print("Interactions with full-amplittude (0..2) cosine wave")
         seasonal_multiplier_ = seasonality_multiplier_full.reshape(1, 1, data.nDs)
     else:
-        #print("Interactions with seasonality-amplitude cosine wave")
+        # print("Interactions with seasonality-amplitude cosine wave")
         seasonal_multiplier_ = seasonality_multiplier.reshape(data.nRs, 1, data.nDs)
-    cm_reduction_int = jnp.sum(data.active_cms * alpha_int_i.reshape((1, data.nCMs, 1)) * jnp.log(seasonal_multiplier_), axis=1)
+    cm_reduction_int = jnp.sum(
+        data.active_cms
+        * alpha_int_i.reshape((1, data.nCMs, 1))
+        * jnp.log(seasonal_multiplier_),
+        axis=1,
+    )
 
     # rescaling variables by 10 for better NUTS adaptation
     r_walk_noise = numpyro.sample(
@@ -381,14 +413,19 @@ def seasonality_interactions_model(
     )[: data.nRs, : (data.nDs - 2 * r_walk_period)]
     # except that we assume no noise for the first 3 weeks
     full_log_Rt_noise = jnp.zeros((data.nRs, data.nDs))
-    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(expanded_r_walk_noise)
+    full_log_Rt_noise = full_log_Rt_noise.at[:, 2 * r_walk_period :].set(
+        expanded_r_walk_noise
+    )
 
     # NB: basic_R is R0(t=0) INCLUDING seasonality effect (for comparability with non-seasonal model),
     # so we need to divide by the initial seasonality first
     Rt = numpyro.deterministic(
         "Rt",
         jnp.exp(
-            jnp.log(basic_R.reshape((data.nRs, 1))) + full_log_Rt_noise - cm_reduction - cm_reduction_int
+            jnp.log(basic_R.reshape((data.nRs, 1)))
+            + full_log_Rt_noise
+            - cm_reduction
+            - cm_reduction_int
         )
         * seasonality_multiplier
         / seasonality_multiplier[:, :1],  # First day multipliers for every region
@@ -397,7 +434,10 @@ def seasonality_interactions_model(
     # collect variables in the numpyro trace
     numpyro.deterministic("Rt_walk", jnp.exp(full_log_Rt_noise))
     numpyro.deterministic(
-        "Rt_cm", jnp.exp(jnp.log(basic_R.reshape((data.nRs, 1))) - cm_reduction - cm_reduction_int)
+        "Rt_cm",
+        jnp.exp(
+            jnp.log(basic_R.reshape((data.nRs, 1))) - cm_reduction - cm_reduction_int
+        ),
     )
     # Rt before applying cm_reductions
     numpyro.deterministic(
@@ -436,8 +476,9 @@ def seasonality_interactions_model(
         infections + (infection_noise_scale * (10.0 * infection_noise.T))
     )
 
-
-    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(init_infections[:, -seeding_padding:])
+    total_infections = total_infections_placeholder.at[:, :seeding_padding].set(
+        init_infections[:, -seeding_padding:]
+    )
     total_infections = numpyro.deterministic(
         "total_infections",
         total_infections.at[:, seeding_padding:].set(infections.T),
