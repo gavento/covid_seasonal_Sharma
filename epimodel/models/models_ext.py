@@ -13,11 +13,11 @@ from epimodel.models.model_build_utils import *
 def sample_fourier_phases_amplitudes(name, fourier_degree, scale=1.0):
     assert fourier_degree >= 1
     xys = numpyro.sample(
-        f"{name}_xy0_", dist.Normal(jnp.zeors((fourier_degree, 2), scale))
+        f"{name}_xy0_", dist.Normal(jnp.zeros((fourier_degree, 2)), scale)
     )
     xys = xys.at[0, 1].set(0.0)
     _phase = numpyro.numpyro.deterministic(
-        f"{name}_phase", jnp.atan2(xys[:, 1], xys[:, 0])
+        f"{name}_phase", jnp.arctan2(xys[:, 1], xys[:, 0])
     )
     _amplitude = numpyro.numpyro.deterministic(
         f"{name}_amplitude", jnp.hypot(xys[:, 0], xys[:, 1])
@@ -37,7 +37,7 @@ def days_to_amplitude(days_of_year, seasonality_xys):
         periods.append(periods[-1] / 2.0)
     periods = jnp.array(periods)
 
-    days_phase = days_of_year.reshape((-1, 1)) / periods.reshape((1, -1))
+    days_phase = days_of_year.reshape((-1, 1)) / periods.reshape((1, -1)) * 2 * jnp.pi
     days_xys = jnp.stack([jnp.cos(days_phase), jnp.sin(days_phase)], axis=2)
     days_amplitude = jnp.sum(
         seasonality_xys.reshape(1, degree, 2) * days_xys, axis=(1, 2)
@@ -98,12 +98,11 @@ def seasonality_fourier_model(
         "seasonality_beta1", seasonality_xys[0, 0]
     )
     _ = numpyro.deterministic(
-        "seasonality_year", 1 + days_to_amplitude(jnp.arange(0.0, 365)), seasonality_xys
+        "seasonality_year", 1 + days_to_amplitude(jnp.arange(0.0, 365), seasonality_xys)
     )
     seasonality_multiplier = numpyro.deterministic(
         "seasonality_multiplier",
-        1 + days_to_amplitude(data.Ds_day_of_year),
-        seasonality_xys,
+        1 + days_to_amplitude(data.Ds_day_of_year, seasonality_xys),
     ).reshape((1, -1))
 
     # number of 'noise points'

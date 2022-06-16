@@ -202,7 +202,7 @@ if __name__ == "__main__":
         output_fname=full_output,
         chain_method="parallel",
         sample_prior=(args.fourier_degree is None),
-        rng_key=42,
+        rng_key=0,
     )
 
     info_dict["model_config_name"] = args.model_config
