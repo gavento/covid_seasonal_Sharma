@@ -68,14 +68,6 @@ def seasonality_fourier_model(
     # Therefore it is comparable to basic_R without seasonality
     basic_R = sample_basic_R(data.nRs, basic_R_prior)
 
-    # number of 'noise points'
-    # -1 since no change for the first 2 weeks.
-    nNP = int(data.nDs / r_walk_period) - 1
-
-    r_walk_noise_scale = numpyro.sample(
-        "r_walk_noise_scale", dist.HalfNormal(scale=r_walk_noise_scale_prior)
-    )
-
     if fourier_degree > 1:
         seasonality_phases_tail = phase_prior(fourier_degree - 1)
         seasonality_max_R_day_vec = numpyro.deterministic(
@@ -104,6 +96,14 @@ def seasonality_fourier_model(
             * jnp.pi
         ), axis=1),
     ).reshape((1, -1))
+
+    # number of 'noise points'
+    # -1 since no change for the first 2 weeks.
+    nNP = int(data.nDs / r_walk_period) - 1
+
+    r_walk_noise_scale = numpyro.sample(
+        "r_walk_noise_scale", dist.HalfNormal(scale=r_walk_noise_scale_prior)
+    )
 
     # rescaling variables by 10 for better NUTS adaptation
     r_walk_noise = numpyro.sample(

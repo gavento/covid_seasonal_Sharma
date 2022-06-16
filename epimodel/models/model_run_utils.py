@@ -29,6 +29,7 @@ def run_model(
     heuristic_step_size=True,
     sample_prior=True,
     sample_posterior=True,
+    rng_key=0,
 ):
     """
     Model run utility
@@ -66,7 +67,7 @@ def run_model(
         num_chains=num_chains,
         chain_method=chain_method,
     )
-    rng_key = random.PRNGKey(0)
+    rng_key = random.PRNGKey(rng_key)
 
     # hmcstate = nuts_kernel.init(rng_key, 1, model_args=(data, ep))
     # nRVs = hmcstate.adapt_state.inverse_mass_matrix.size
