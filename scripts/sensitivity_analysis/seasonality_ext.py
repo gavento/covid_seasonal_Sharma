@@ -11,7 +11,10 @@ from datetime import datetime
 
 import numpyro
 from epimodel import EpidemiologicalParameters, preprocess_data, run_model
-from epimodel.models.models_ext import seasonality_fourier_model, seasonality_interactions_model
+from epimodel.models.models_ext import (
+    seasonality_fourier_model,
+    seasonality_interactions_model,
+)
 from epimodel.script_utils import *
 
 argparser = argparse.ArgumentParser()
@@ -102,11 +105,18 @@ argparser.add_argument(
 )
 argparser.add_argument("--interactions", type=str, default=None)
 
+argparser.add_argument(
+    "--rng_key",
+    type=int,
+    default=0,
+    help="",
+)
+
 if __name__ == "__main__":
     args = argparser.parse_args()
 
     numpyro.set_host_device_count(args.num_chains)
-    #os.environ["XLA_FLAGS"] = "--intra_op_parallelism_threads=1 --xla_force_host_platform_device_count=4 --xla_cpu_multi_thread_eigen=false"
+    # os.environ["XLA_FLAGS"] = "--intra_op_parallelism_threads=1 --xla_force_host_platform_device_count=4 --xla_cpu_multi_thread_eigen=false"
 
     if not args.output_base:
         base_outpath = generate_base_output_dir(
@@ -202,7 +212,7 @@ if __name__ == "__main__":
         output_fname=full_output,
         chain_method="parallel",
         sample_prior=(args.fourier_degree is None),
-        rng_key=0,
+        rng_key=int(args.rng_key),
     )
 
     info_dict["model_config_name"] = args.model_config
