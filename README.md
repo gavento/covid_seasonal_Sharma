@@ -1,6 +1,6 @@
-# Seasonal model of Sharma et al. COVID-19 Nonpharmaceutical Interventions Effectiveness
+# Seasonal model of Sharma et al.: COVID-19 Nonpharmaceutical Interventions Effectiveness
 
-This repository contains one part of the code used in the paper [Gavenčiak et al.: Seasonal variation in SARS-CoV-2 transmission in temperate climates: A Bayesian modelling study in 143 European regions](https://doi.org/10.1371/journal.pcbi.1010435), PLOS Comp. Bio., 2022. The 2021 preprint can be found [here](https://www.medrxiv.org/content/10.1101/2021.06.10.21258647v1).
+This repository contains one part of the code used in the paper [Gavenčiak et al.: Seasonal variation in SARS-CoV-2 transmission in temperate climates: A Bayesian modelling study in 143 European regions](https://doi.org/10.1371/journal.pcbi.1010435), PLOS Comp. Bio., 2022. The 2021 preprint can be found [here](https://www.medrxiv.org/content/10.1101/2021.06.10.21258647v3).
 
 This repository contains the seasonal variant of the model of [Sharma et al. (2021), *Understanding the effectiveness of government interventions in Europe’s second wave of COVID-19*](https://www.medrxiv.org/content/10.1101/2021.03.25.21254330v1) and has been forked from [MrinankSharma/COVID19NPISecondWave](https://github.com/MrinankSharma/COVID19NPISecondWave); please see that repo for further details.
 
@@ -62,11 +62,11 @@ poetry run python scripts/sensitivity_dispatcher.py --max_parallel_runs 4 --mode
     * Now includes real-world data from `MrinankSharma/COVID19NPISecondWave`
   * Update docs and configs for easier reproduction
 
-* Plos Comp. Bio v1 (tag [submitted-1](https://github.com/gavento/covid_seasonal_Sharma/tree/submitted-1))
+* Plos Comp. Bio v1 (tag [`submitted-1`](https://github.com/gavento/covid_seasonal_Sharma/tree/submitted-1))
   * Add sensitivity analyses for the seasonal forcing model and seasoanlity interactions
   * Add plotters for the new analyses and the final plots
   * Update major dependencies (numpyro, JAX, arviz), update code to match
 
 ## Questions?
 
-Please email Tomáš Gavenčiak (`gavento` at `ucw` dot `cz`) or Mrinank Sharma (`mrinank` at `robots` dot `ac` dot `uk`, only regarding their code) for questions regarding the codebase.
+Please email Tomáš Gavenčiak (`gavento` at `ucw` dot `cz`) or Mrinank Sharma (`mrinank` at `robots` dot `ac` dot `uk`, only inquiries regarding their code) for questions regarding the codebase.
